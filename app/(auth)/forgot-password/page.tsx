@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { forgotSchema, type ForgotInput } from "@/lib/validation"
+import { authApi } from "@/lib/api"
 
 export default function ForgotPasswordPage() {
 	const {
@@ -23,7 +24,7 @@ export default function ForgotPasswordPage() {
 	})
 
 	const onSubmit = async (values: ForgotInput) => {
-		await new Promise((r) => setTimeout(r, 700))
+		await authApi.forgotPassword(values.email)
 		toast.success("Check your inbox", { description: `Reset link sent to ${values.email}` })
 	}
 

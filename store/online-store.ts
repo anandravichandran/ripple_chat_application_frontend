@@ -10,7 +10,7 @@ type OnlineState = {
 }
 
 export const useOnlineStore = create<OnlineState>((set) => ({
-	onlineIds: new Set(["u_me", "u_1", "u_3", "u_6"]),
+	onlineIds: new Set(),
 	setOnline: (ids) => set({ onlineIds: new Set(ids) }),
 	add: (id) =>
 		set((s) => {

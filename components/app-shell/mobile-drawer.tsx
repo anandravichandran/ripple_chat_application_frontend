@@ -34,7 +34,7 @@ export function MobileDrawer() {
 	const { mobileOpen, setMobileOpen } = useSidebarStore()
 	const pathname = usePathname()
 	const user = useAuthStore((s) => s.user)
-	const signOut = useAuthStore((s) => s.signOut)
+	const signOut = useAuthStore((s) => s.logout)
 	const router = useRouter()
 
 	return (

@@ -11,7 +11,7 @@ type RoomState = {
 
 export const useRoomStore = create<RoomState>((set) => ({
 	currentRoomId: null,
-	typingByRoom: { r_design: ["Maya"] },
+	typingByRoom: {},
 	setCurrentRoom: (currentRoomId) => set({ currentRoomId }),
 	setTyping: (roomId, users) =>
 		set((s) => ({ typingByRoom: { ...s.typingByRoom, [roomId]: users } })),

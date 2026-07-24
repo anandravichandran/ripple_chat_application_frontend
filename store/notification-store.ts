@@ -2,12 +2,13 @@
 
 import { create } from "zustand"
 import type { Notification } from "@/lib/types"
-import { notifications as seed } from "@/lib/mock"
 
 type NotifState = {
 	items: Notification[]
 	drawerOpen: boolean
 	setDrawer: (open: boolean) => void
+	setItems: (items: Notification[]) => void
+	addItem: (item: Notification) => void
 	markAllRead: () => void
 	markRead: (id: string) => void
 	remove: (id: string) => void
@@ -15,9 +16,11 @@ type NotifState = {
 }
 
 export const useNotificationStore = create<NotifState>((set, get) => ({
-	items: seed,
+	items: [],
 	drawerOpen: false,
 	setDrawer: (drawerOpen) => set({ drawerOpen }),
+	setItems: (items) => set({ items }),
+	addItem: (item) => set((s) => ({ items: [item, ...s.items] })),
 	markAllRead: () =>
 		set((s) => ({ items: s.items.map((n) => ({ ...n, read: true })) })),
 	markRead: (id) =>

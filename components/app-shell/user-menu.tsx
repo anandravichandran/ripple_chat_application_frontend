@@ -17,7 +17,7 @@ import { toast } from "sonner"
 
 export function UserMenu() {
 	const user = useAuthStore((s) => s.user)
-	const signOut = useAuthStore((s) => s.signOut)
+	const signOut = useAuthStore((s) => s.logout)
 	const router = useRouter()
 
 	if (!user) return null

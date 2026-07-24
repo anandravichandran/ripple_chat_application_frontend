@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -14,9 +14,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordStrength } from "@/components/shared/password-strength"
 import { resetSchema, type ResetInput } from "@/lib/validation"
+import { authApi } from "@/lib/api"
 
 export default function ResetPasswordPage() {
 	const router = useRouter()
+	const params = useSearchParams()
+	const token = params.get("token") ?? ""
 	const [show, setShow] = useState(false)
 	const {
 		register,
@@ -30,10 +33,15 @@ export default function ResetPasswordPage() {
 
 	const password = watch("password")
 
-	const onSubmit = async () => {
-		await new Promise((r) => setTimeout(r, 700))
-		toast.success("Password updated", { description: "You can sign in now." })
-		router.push("/login")
+	const onSubmit = async (values: ResetInput) => {
+		try {
+			await authApi.resetPassword(token, values.password)
+			toast.success("Password updated", { description: "You can sign in now." })
+			router.push("/login")
+		} catch (err: unknown) {
+			const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Reset failed"
+			toast.error(msg)
+		}
 	}
 
 	return (

@@ -1,25 +1,119 @@
 "use client"
 
-import { useEffect } from "react"
-import { getSocket } from "@/lib/socket"
+import { useEffect, useRef } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { getSocket, connectSocket, disconnectSocket, SOCKET_EVENTS } from "@/lib/socket"
 import { useSocketStore } from "@/store/socket-store"
+import { useOnlineStore } from "@/store/online-store"
+import { useRoomStore } from "@/store/room-store"
+import { useAuthStore } from "@/store/auth-store"
 
-// Optional: opt-in wiring to a real socket.io server via NEXT_PUBLIC_SOCKET_URL.
-// Safe no-op if no URL is provided.
 export function useSocketEvents() {
 	const setStatus = useSocketStore((s) => s.setStatus)
+	const setLatency = useSocketStore((s) => s.setLatency)
+	const addOnline = useOnlineStore((s) => s.add)
+	const removeOnline = useOnlineStore((s) => s.remove)
+	const setCurrentRoom = useRoomStore((s) => s.setCurrentRoom)
+	const setTyping = useRoomStore((s) => s.setTyping)
+	const status = useAuthStore((s) => s.status)
+	const qc = useQueryClient()
+	const heartbeatRef = useRef<number>(0)
+
 	useEffect(() => {
-		if (!process.env.NEXT_PUBLIC_SOCKET_URL) return
-		const s = getSocket()
-		s.on("connect", () => setStatus("connected"))
-		s.on("disconnect", () => setStatus("disconnected"))
-		s.io.on("reconnect_attempt", () => setStatus("reconnecting"))
-		setStatus("connecting")
-		s.connect()
-		return () => {
-			s.off("connect")
-			s.off("disconnect")
-			s.io.off("reconnect_attempt")
+		if (status !== "authenticated") {
+			disconnectSocket()
+			setStatus("idle")
+			return
 		}
-	}, [setStatus])
+
+		const socket = connectSocket()
+		if (!socket) return
+
+		const onConnect = () => {
+			setStatus("connected")
+			heartbeatRef.current = Date.now()
+		}
+
+		const onDisconnect = () => setStatus("disconnected")
+		const onReconnectAttempt = () => setStatus("reconnecting")
+		const onConnectError = () => setStatus("disconnected")
+
+		const onHeartbeat = () => {
+			setLatency(Date.now() - (heartbeatRef.current || Date.now()))
+			socket.emit(SOCKET_EVENTS.HEARTBEAT_ACK)
+			heartbeatRef.current = Date.now()
+		}
+
+		const onUserOnline = ({ userId }: { userId: string }) => addOnline(userId)
+		const onUserOffline = ({ userId }: { userId: string }) => removeOnline(userId)
+
+		const onReceiveMessage = () => {
+			qc.invalidateQueries({ queryKey: ["messages"] })
+			qc.invalidateQueries({ queryKey: ["rooms"] })
+		}
+
+		const onMessageEdited = () => qc.invalidateQueries({ queryKey: ["messages"] })
+		const onMessageDeleted = () => qc.invalidateQueries({ queryKey: ["messages"] })
+		const onMessageDelivered = () => qc.invalidateQueries({ queryKey: ["messages"] })
+		const onMessageSeen = () => qc.invalidateQueries({ queryKey: ["messages"] })
+
+		const onRoomCreated = () => qc.invalidateQueries({ queryKey: ["rooms"] })
+		const onRoomUpdated = () => qc.invalidateQueries({ queryKey: ["rooms"] })
+		const onRoomDeleted = () => qc.invalidateQueries({ queryKey: ["rooms"] })
+
+		const onTyping = ({ roomId, username }: { roomId: string; username: string }) => {
+			setTyping(roomId, [username])
+		}
+
+		const onStopTyping = ({ roomId }: { roomId: string }) => {
+			setTyping(roomId, [])
+		}
+
+		const onNotification = () => {
+			qc.invalidateQueries({ queryKey: ["notifications"] })
+		}
+
+		socket.on(SOCKET_EVENTS.CONNECT, onConnect)
+		socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect)
+		socket.io.on("reconnect_attempt", onReconnectAttempt)
+		socket.io.on("reconnect_error", onConnectError)
+		socket.on(SOCKET_EVENTS.HEARTBEAT, onHeartbeat)
+		socket.on(SOCKET_EVENTS.USER_ONLINE, onUserOnline)
+		socket.on(SOCKET_EVENTS.USER_OFFLINE, onUserOffline)
+		socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage)
+		socket.on(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
+		socket.on(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
+		socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED, onMessageDelivered)
+		socket.on(SOCKET_EVENTS.MESSAGE_SEEN, onMessageSeen)
+		socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated)
+		socket.on(SOCKET_EVENTS.ROOM_UPDATED, onRoomUpdated)
+		socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted)
+		socket.on(SOCKET_EVENTS.TYPING, onTyping)
+		socket.on(SOCKET_EVENTS.STOP_TYPING, onStopTyping)
+		socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, onNotification)
+
+		setStatus("connecting")
+		socket.connect()
+
+		return () => {
+			socket.off(SOCKET_EVENTS.CONNECT, onConnect)
+			socket.off(SOCKET_EVENTS.DISCONNECT, onDisconnect)
+			socket.io.off("reconnect_attempt", onReconnectAttempt)
+			socket.io.off("reconnect_error", onConnectError)
+			socket.off(SOCKET_EVENTS.HEARTBEAT, onHeartbeat)
+			socket.off(SOCKET_EVENTS.USER_ONLINE, onUserOnline)
+			socket.off(SOCKET_EVENTS.USER_OFFLINE, onUserOffline)
+			socket.off(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage)
+			socket.off(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
+			socket.off(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
+			socket.off(SOCKET_EVENTS.MESSAGE_DELIVERED, onMessageDelivered)
+			socket.off(SOCKET_EVENTS.MESSAGE_SEEN, onMessageSeen)
+			socket.off(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated)
+			socket.off(SOCKET_EVENTS.ROOM_UPDATED, onRoomUpdated)
+			socket.off(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted)
+			socket.off(SOCKET_EVENTS.TYPING, onTyping)
+			socket.off(SOCKET_EVENTS.STOP_TYPING, onStopTyping)
+			socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, onNotification)
+		}
+	}, [status, setStatus, setLatency, addOnline, removeOnline, setTyping, qc])
 }

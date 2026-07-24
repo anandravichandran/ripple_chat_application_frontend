@@ -31,7 +31,7 @@ export function MessageBubble({
 	onPin,
 }: {
 	message: Message
-	author: User
+	author?: User
 	isOwn: boolean
 	showAvatar: boolean
 	showMeta: boolean
@@ -54,14 +54,14 @@ export function MessageBubble({
 		>
 			<div className="w-9 shrink-0">
 				{showAvatar ? (
-					<UserAvatar initials={author.avatar} status={author.status} size="sm" />
+					<UserAvatar initials={author?.avatar ?? message.authorId.slice(0, 2)} status={author?.status ?? "offline"} size="sm" />
 				) : null}
 			</div>
 
 			<div className={cn("flex min-w-0 flex-1 flex-col", isOwn && "items-end")}>
 				{showMeta ? (
 					<div className={cn("mb-1 flex items-center gap-2 text-[11px]", isOwn && "flex-row-reverse")}>
-						<span className="font-medium text-text-primary">{isOwn ? "You" : author.name}</span>
+						<span className="font-medium text-text-primary">{isOwn ? "You" : author?.name ?? "Unknown"}</span>
 						<span className="text-text-muted">{time(message.at)}</span>
 					</div>
 				) : null}

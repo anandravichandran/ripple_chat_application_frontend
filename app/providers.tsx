@@ -3,12 +3,14 @@
 import { Toaster } from "sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "@/lib/query-client"
+import { SocketInit } from "@/components/shared/socket-init"
 
 export function Providers({ children }: { children: React.ReactNode }) {
 	return (
 		<QueryProvider>
 			<TooltipProvider delayDuration={200}>
 				{children}
+				<SocketInit />
 				<Toaster
 					theme="dark"
 					position="top-right"

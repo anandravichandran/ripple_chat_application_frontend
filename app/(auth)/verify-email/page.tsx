@@ -51,16 +51,25 @@ export default function VerifyEmailPage() {
 		inputs.current[Math.min(text.length, 5)]?.focus()
 	}
 
+	const verifyEmail = useAuthStore((s) => s.verifyEmail)
+	const resendOtp = useAuthStore((s) => s.resendOtp)
+
 	const submit = async () => {
 		if (code.some((d) => !d)) {
 			toast.error("Enter the 6-digit code")
 			return
 		}
 		setLoading(true)
-		await new Promise((r) => setTimeout(r, 700))
-		setLoading(false)
-		toast.success("Email verified", { description: "You can sign in now." })
-		router.push("/login")
+		try {
+			await verifyEmail(email, code.join(""))
+			toast.success("Email verified", { description: "You can sign in now." })
+			router.push("/login")
+		} catch (err: unknown) {
+			const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Verification failed"
+			toast.error(msg)
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	return (
@@ -114,19 +123,24 @@ export default function VerifyEmailPage() {
 			</Button>
 
 			<div className="mt-4 text-center text-sm text-text-muted">
-				{seconds > 0 ? (
-					<>Resend in <span className="text-text-secondary">{seconds}s</span></>
-				) : (
-					<button
-						className="text-accent-primary hover:underline"
-						onClick={() => {
+			{seconds > 0 ? (
+				<>Resend in <span className="text-text-secondary">{seconds}s</span></>
+			) : (
+				<button
+					className="text-accent-primary hover:underline"
+					onClick={async () => {
+						try {
+							await resendOtp(email)
 							setSeconds(30)
 							toast("Code resent", { description: `Check ${email}` })
-						}}
-					>
-						Resend code
-					</button>
-				)}
+						} catch {
+							toast.error("Failed to resend code")
+						}
+					}}
+				>
+					Resend code
+				</button>
+			)}
 			</div>
 		</AuthShell>
 	)

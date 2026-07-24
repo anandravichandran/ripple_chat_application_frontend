@@ -20,7 +20,7 @@ export function MessageComposer({
 	onSend: (text: string, options?: { replyTo?: Message }) => void
 	replyTo?: Message | null
 	onCancelReply?: () => void
-	mentionCandidates: User[]
+	mentionCandidates?: User[]
 	disabled?: boolean
 }) {
 	const [text, setText] = useState("")
@@ -57,7 +57,7 @@ export function MessageComposer({
 		inputRef.current?.focus()
 	}
 
-	const filteredMentions = mentionCandidates.filter((u) =>
+	const filteredMentions = (mentionCandidates ?? []).filter((u) =>
 		u.username.toLowerCase().startsWith(mentionQuery),
 	)
 

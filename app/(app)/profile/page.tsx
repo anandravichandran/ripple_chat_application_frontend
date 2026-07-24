@@ -12,11 +12,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PageHeader } from "@/components/shared/page-header"
 import { useAuthStore } from "@/store/auth-store"
-import { sessions, currentUser } from "@/lib/mock"
+import { useSessions } from "@/hooks/use-profile"
 
 export default function ProfilePage() {
 	const router = useRouter()
-	const user = useAuthStore((s) => s.user) ?? currentUser
+	const user = useAuthStore((s) => s.user)
+	const { data: sessions = [] } = useSessions()
 
 	return (
 		<div className="space-y-6">
@@ -33,17 +34,17 @@ export default function ProfilePage() {
 					<div className="relative -mt-14 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-end sm:justify-between">
 						<div className="flex items-end gap-4">
 							<div className="relative">
-								<UserAvatar initials={user.avatar} status={user.status} size="xl" ring />
+								<UserAvatar initials={user?.avatar ?? "?"} status={user?.status ?? "offline"} size="xl" ring />
 								<button type="button" className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border border-glass-border bg-bg-primary text-text-primary shadow-float hover:bg-glass-hover">
 									<Camera className="h-3.5 w-3.5" />
 								</button>
 							</div>
 							<div>
 								<div className="flex items-center gap-2">
-									<h2 className="text-xl font-semibold tracking-tight">{user.name}</h2>
+									<h2 className="text-xl font-semibold tracking-tight">{user?.name ?? "User"}</h2>
 									<Badge variant="accent">Pro</Badge>
 								</div>
-								<p className="text-sm text-text-muted">@{user.username} · {user.email}</p>
+								<p className="text-sm text-text-muted">@{user?.username ?? "user"} · {user?.email ?? ""}</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
@@ -55,9 +56,9 @@ export default function ProfilePage() {
 					<div className="grid gap-6 p-6 pt-0 lg:grid-cols-3">
 						<div className="lg:col-span-2 space-y-5">
 							<div className="grid gap-4 sm:grid-cols-2">
-								<Field label="Display name" defaultValue={user.name} />
-								<Field label="Username" defaultValue={user.username} />
-								<Field label="Email" defaultValue={user.email} icon={<Mail className="h-3.5 w-3.5" />} />
+								<Field label="Display name" defaultValue={user?.name ?? ""} />
+								<Field label="Username" defaultValue={user?.username ?? ""} />
+								<Field label="Email" defaultValue={user?.email ?? ""} icon={<Mail className="h-3.5 w-3.5" />} />
 								<Field label="Phone" defaultValue="+1 (415) 555-0198" icon={<Phone className="h-3.5 w-3.5" />} />
 							</div>
 							<div>

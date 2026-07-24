@@ -14,12 +14,13 @@ import { useAuthStore } from "@/store/auth-store"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
-	const { user, status } = useAuthStore()
+	const { user, status, hydrate } = useAuthStore()
 	const [mounted, setMounted] = useState(false)
 
 	useEffect(() => {
 		setMounted(true)
-	}, [])
+		hydrate()
+	}, [hydrate])
 
 	useEffect(() => {
 		if (!mounted) return

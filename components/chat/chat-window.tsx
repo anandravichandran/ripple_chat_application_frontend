@@ -13,15 +13,17 @@ import { FloatingScrollButton } from "./floating-scroll-button"
 import { ChatSkeleton } from "./chat-skeleton"
 import { ErrorState } from "@/components/ui/error-state"
 import { useMessages } from "@/hooks/use-messages"
-import { users, currentUser } from "@/lib/mock"
+import { useAuthStore } from "@/store/auth-store"
+import { useRoomStore } from "@/store/room-store"
 import { dayLabel } from "@/lib/format"
 import type { Message, Room } from "@/lib/types"
 
 export function ChatWindow({ room }: { room: Room }) {
 	const { data, isLoading, isError, refetch } = useMessages(room.id)
+	const currentUser = useAuthStore((s) => s.user)
+	const typingUsers = useRoomStore((s) => s.typingByRoom[room.id] ?? [])
 	const [items, setItems] = useState<Message[]>([])
 	const [replyTo, setReplyTo] = useState<Message | null>(null)
-	const [typing, setTyping] = useState<string[]>([])
 	const [showScroll, setShowScroll] = useState(false)
 	const scrollerRef = useRef<HTMLDivElement>(null)
 	const endRef = useRef<HTMLDivElement>(null)
@@ -38,16 +40,6 @@ export function ChatWindow({ room }: { room: Room }) {
 		if (!showScroll) endRef.current?.scrollIntoView({ behavior: "smooth" })
 	}, [items.length, showScroll])
 
-	useEffect(() => {
-		const t = setTimeout(() => setTyping(["Priya"]), 1200)
-		const t2 = setTimeout(() => setTyping([]), 4200)
-		return () => {
-			clearTimeout(t)
-			clearTimeout(t2)
-		}
-	}, [room.id])
-
-	const usersById = useMemo(() => Object.fromEntries(users.map((u) => [u.id, u])), [])
 	const pinned = useMemo(() => items.filter((m) => m.pinned), [items])
 
 	function handleScroll(e: React.UIEvent<HTMLDivElement>) {
@@ -59,27 +51,18 @@ export function ChatWindow({ room }: { room: Room }) {
 	function handleSend(text: string, opts?: { replyTo?: Message }) {
 		const m: Message = {
 			id: `local_${Date.now()}`,
-			authorId: currentUser.id,
+			authorId: currentUser?.id ?? "",
 			text,
 			at: new Date().toISOString(),
 			type: "text",
 			status: "sent",
 			reactions: [],
 			replyTo: opts?.replyTo
-				? {
-						author: usersById[opts.replyTo.authorId]?.name ?? "Someone",
-						preview: opts.replyTo.text.slice(0, 80),
-					}
+				? { author: opts.replyTo.authorId, preview: opts.replyTo.text.slice(0, 80) }
 				: undefined,
 		}
 		setItems((prev) => [...prev, m])
 		setReplyTo(null)
-		setTimeout(() => {
-			setItems((prev) => prev.map((x) => (x.id === m.id ? { ...x, status: "delivered" } : x)))
-		}, 600)
-		setTimeout(() => {
-			setItems((prev) => prev.map((x) => (x.id === m.id ? { ...x, status: "seen" } : x)))
-		}, 1600)
 	}
 
 	function handleReact(m: Message, emoji: string) {
@@ -128,7 +111,7 @@ export function ChatWindow({ room }: { room: Room }) {
 	return (
 		<div className="relative flex h-full min-w-0 flex-1 flex-col">
 			<ReconnectBanner />
-			<PinnedMessages messages={pinned} usersById={usersById} onUnpin={handlePin} />
+			<PinnedMessages messages={pinned} onUnpin={handlePin} />
 
 			<div ref={scrollerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
 				{isLoading ? (
@@ -138,19 +121,16 @@ export function ChatWindow({ room }: { room: Room }) {
 						<AnimatePresence initial={false}>
 							{items.map((m, i) => {
 								const prev = items[i - 1]
-								const author = usersById[m.authorId] ?? users[0]
-								const prevAuthor = prev ? usersById[prev.authorId] : undefined
+								const isOwn = m.authorId === currentUser?.id
 								const sameAuthor = prev?.authorId === m.authorId
 								const dayChanged = !prev || new Date(prev.at).toDateString() !== new Date(m.at).toDateString()
 								const unreadInsert = i > 0 && items[i - 1].id === room.unreadFromMessageId
-								const isOwn = m.authorId === currentUser.id
 								return (
 									<div key={m.id}>
 										{dayChanged ? <DayDivider label={dayLabel(m.at)} /> : null}
 										{unreadInsert && room.unread > 0 ? <UnreadDivider count={room.unread} /> : null}
 										<MessageBubble
 											message={m}
-											author={author}
 											isOwn={isOwn}
 											showAvatar={!sameAuthor || dayChanged}
 											showMeta={!sameAuthor || dayChanged}
@@ -162,10 +142,9 @@ export function ChatWindow({ room }: { room: Room }) {
 										/>
 									</div>
 								)
-								void prevAuthor
 							})}
 						</AnimatePresence>
-						<TypingIndicator names={typing} />
+						<TypingIndicator names={typingUsers} />
 						<div ref={endRef} />
 					</div>
 				)}
@@ -177,12 +156,7 @@ export function ChatWindow({ room }: { room: Room }) {
 				onClick={() => endRef.current?.scrollIntoView({ behavior: "smooth" })}
 			/>
 
-			<MessageComposer
-				onSend={handleSend}
-				replyTo={replyTo}
-				onCancelReply={() => setReplyTo(null)}
-				mentionCandidates={users}
-			/>
+			<MessageComposer onSend={handleSend} replyTo={replyTo} onCancelReply={() => setReplyTo(null)} />
 		</div>
 	)
 }

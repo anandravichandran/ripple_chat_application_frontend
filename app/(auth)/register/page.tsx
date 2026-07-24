@@ -19,7 +19,7 @@ import { useAuthStore } from "@/store/auth-store"
 
 export default function RegisterPage() {
 	const router = useRouter()
-	const signUp = useAuthStore((s) => s.signUp)
+	const registerUser = useAuthStore((s) => s.register)
 	const [showPassword, setShowPassword] = useState(false)
 
 	const {
@@ -44,10 +44,14 @@ export default function RegisterPage() {
 	const terms = watch("terms")
 
 	const onSubmit = async (values: RegisterInput) => {
-		await new Promise((r) => setTimeout(r, 700))
-		signUp(values.email, values.name)
-		toast.success("Account created", { description: "We sent a verification code to " + values.email })
-		router.push(`/verify-email?email=${encodeURIComponent(values.email)}`)
+		try {
+			await registerUser({ name: values.name, username: values.username, email: values.email, password: values.password })
+			toast.success("Account created", { description: "We sent a verification code to " + values.email })
+			router.push(`/verify-email?email=${encodeURIComponent(values.email)}`)
+		} catch (err: unknown) {
+			const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Registration failed"
+			toast.error(msg)
+		}
 	}
 
 	return (

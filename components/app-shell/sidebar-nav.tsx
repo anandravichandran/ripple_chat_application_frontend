@@ -40,7 +40,7 @@ export function SidebarNav() {
 	const router = useRouter()
 	const { collapsed, toggleCollapsed } = useSidebarStore()
 	const user = useAuthStore((s) => s.user)
-	const signOut = useAuthStore((s) => s.signOut)
+	const signOut = useAuthStore((s) => s.logout)
 	const unread = useNotificationStore((s) => s.items.filter((n) => !n.read).length)
 
 	const active = (href: string) => pathname === href || pathname.startsWith(href + "/")

@@ -19,7 +19,7 @@ import { useAuthStore } from "@/store/auth-store"
 
 export default function LoginPage() {
 	const router = useRouter()
-	const signIn = useAuthStore((s) => s.signIn)
+	const login = useAuthStore((s) => s.login)
 	const [showPassword, setShowPassword] = useState(false)
 
 	const {
@@ -34,10 +34,14 @@ export default function LoginPage() {
 	})
 
 	const onSubmit = async (values: LoginInput) => {
-		await new Promise((r) => setTimeout(r, 700))
-		signIn({ email: values.email })
-		toast.success("Welcome back", { description: "You're signed in." })
-		router.push("/dashboard")
+		try {
+			await login(values.email, values.password)
+			toast.success("Welcome back", { description: "You're signed in." })
+			router.push("/dashboard")
+		} catch (err: unknown) {
+			const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Invalid email or password"
+			toast.error(msg)
+		}
 	}
 
 	return (
