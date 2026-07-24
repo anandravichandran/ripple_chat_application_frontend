@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Loader } from "@/components/shared/loader"
 import { loginSchema, type LoginInput } from "@/lib/validation"
 import { useAuthStore } from "@/store/auth-store"
 
@@ -114,8 +113,7 @@ export default function LoginPage() {
 					</label>
 				</div>
 
-				<Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-					{isSubmitting ? <Loader /> : null}
+				<Button type="submit" size="lg" className="w-full" loading={isSubmitting}>
 					Sign in
 					<ArrowRight className="h-4 w-4" />
 				</Button>

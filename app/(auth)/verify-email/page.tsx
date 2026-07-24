@@ -9,6 +9,7 @@ import { ArrowRight, Mail } from "lucide-react"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Loader } from "@/components/shared/loader"
+import { useAuthStore } from "@/store/auth-store"
 
 export default function VerifyEmailPage() {
 	const router = useRouter()

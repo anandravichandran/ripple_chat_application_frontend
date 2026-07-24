@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { toast } from "sonner"
 import { Users, Hash, AlertTriangle, TrendingUp, Server, ShieldAlert, MoreHorizontal, Search } from "lucide-react"
 import { GlassCard } from "@/components/shared/glass-card"
 import { Badge } from "@/components/ui/badge"
@@ -62,7 +63,7 @@ export default function AdminPage() {
 								<Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
 								<Input placeholder="Search users…" className="pl-10" />
 							</div>
-							<Button size="sm" variant="secondary">Invite user</Button>
+							<Button size="sm" variant="secondary" onClick={() => toast.success("Invite link copied")}>Invite user</Button>
 						</div>
 						<div className="overflow-x-auto">
 							<table className="w-full text-sm">
@@ -147,7 +148,7 @@ export default function AdminPage() {
 							</div>
 							<h3 className="text-base font-semibold">Report queue is calm</h3>
 							<p className="max-w-md text-sm text-text-secondary">Three low-severity reports pending. The rest of the queue is clear.</p>
-							<Button variant="secondary" size="sm">Open queue</Button>
+							<Button variant="secondary" size="sm" onClick={() => toast.info("Report queue loading…")}>Open queue</Button>
 						</div>
 					</GlassCard>
 				</TabsContent>

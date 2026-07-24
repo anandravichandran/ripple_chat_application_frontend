@@ -10,7 +10,6 @@ import { FieldError } from "@/components/auth/field-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader } from "@/components/shared/loader"
 import { forgotSchema, type ForgotInput } from "@/lib/validation"
 
 export default function ForgotPasswordPage() {
@@ -53,8 +52,7 @@ export default function ForgotPasswordPage() {
 					<FieldError message={errors.email?.message} />
 				</div>
 
-				<Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-					{isSubmitting ? <Loader /> : null}
+				<Button type="submit" size="lg" className="w-full" loading={isSubmitting}>
 					Send reset link
 					<ArrowRight className="h-4 w-4" />
 				</Button>

@@ -12,7 +12,6 @@ import { FieldError } from "@/components/auth/field-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader } from "@/components/shared/loader"
 import { PasswordStrength } from "@/components/shared/password-strength"
 import { resetSchema, type ResetInput } from "@/lib/validation"
 
@@ -89,8 +88,7 @@ export default function ResetPasswordPage() {
 					<FieldError message={errors.confirm?.message} />
 				</div>
 
-				<Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-					{isSubmitting ? <Loader /> : null}
+				<Button type="submit" size="lg" className="w-full" loading={isSubmitting}>
 					Update password
 					<ArrowRight className="h-4 w-4" />
 				</Button>

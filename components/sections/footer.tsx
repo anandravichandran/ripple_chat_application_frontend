@@ -2,10 +2,10 @@ import Link from "next/link"
 import { Waves, Github, Twitter, Linkedin, Youtube } from "lucide-react"
 
 const COLS = [
-  { title: "Product", links: ["Features", "Security", "Pricing", "Changelog", "Roadmap"] },
-  { title: "Company", links: ["About", "Careers", "Press", "Contact", "Brand"] },
-  { title: "Resources", links: ["Blog", "Guides", "Community", "Support", "Status"] },
-  { title: "Developers", links: ["Documentation", "API Reference", "GitHub", "SDKs", "Webhooks"] },
+  { title: "Product", links: [{ label: "Features", href: "/#features" }, { label: "Security", href: "/#security" }, { label: "Pricing", href: "/#pricing" }, { label: "Changelog", href: "/register" }, { label: "Roadmap", href: "/register" }] },
+  { title: "Company", links: [{ label: "About", href: "/#about" }, { label: "Careers", href: "/register" }, { label: "Press", href: "/register" }, { label: "Contact", href: "/register" }, { label: "Brand", href: "/register" }] },
+  { title: "Resources", links: [{ label: "Blog", href: "/register" }, { label: "Guides", href: "/register" }, { label: "Community", href: "/register" }, { label: "Support", href: "/register" }, { label: "Status", href: "/register" }] },
+  { title: "Developers", links: [{ label: "Documentation", href: "/register" }, { label: "API Reference", href: "/register" }, { label: "GitHub", href: "/register" }, { label: "SDKs", href: "/register" }, { label: "Webhooks", href: "/register" }] },
 ]
 
 export default function Footer() {
@@ -23,12 +23,12 @@ export default function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-2">
               {[
-                { Icon: Twitter, label: "Twitter" },
-                { Icon: Github, label: "GitHub" },
-                { Icon: Linkedin, label: "LinkedIn" },
-                { Icon: Youtube, label: "YouTube" },
-              ].map(({ Icon, label }) => (
-                <a key={label} href="#" aria-label={label} className="grid h-9 w-9 place-items-center rounded-full glass glass-hover focus-ring">
+                { Icon: Twitter, label: "Twitter", href: "https://twitter.com/ripplechat" },
+                { Icon: Github, label: "GitHub", href: "https://github.com/ripplechat" },
+                { Icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com/company/ripplechat" },
+                { Icon: Youtube, label: "YouTube", href: "https://youtube.com/@ripplechat" },
+              ].map(({ Icon, label, href }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="grid h-9 w-9 place-items-center rounded-full glass glass-hover focus-ring">
                   <Icon className="h-4 w-4 text-fg-muted" />
                 </a>
               ))}
@@ -41,7 +41,7 @@ export default function Footer() {
                 <p className="mb-3 text-[11px] uppercase tracking-widest text-fg-muted">{c.title}</p>
                 <ul className="space-y-2 text-sm">
                   {c.links.map((l) => (
-                    <li key={l}><Link href="#" className="text-fg-muted hover:text-fg">{l}</Link></li>
+                    <li key={l.label}><Link href={l.href} className="text-fg-muted hover:text-fg">{l.label}</Link></li>
                   ))}
                 </ul>
               </div>
@@ -52,9 +52,9 @@ export default function Footer() {
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border pt-6 text-xs text-fg-muted sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} Ripple Chat, Inc. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            <Link href="#" className="hover:text-fg">Privacy</Link>
-            <Link href="#" className="hover:text-fg">Terms</Link>
-            <Link href="#" className="hover:text-fg">Cookies</Link>
+            <Link href="/login" className="hover:text-fg">Privacy</Link>
+            <Link href="/login" className="hover:text-fg">Terms</Link>
+            <Link href="/login" className="hover:text-fg">Cookies</Link>
           </div>
         </div>
       </div>

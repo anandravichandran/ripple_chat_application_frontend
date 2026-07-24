@@ -13,12 +13,13 @@ import { FieldError } from "@/components/auth/field-error"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader } from "@/components/shared/loader"
 import { PasswordStrength } from "@/components/shared/password-strength"
 import { registerSchema, type RegisterInput } from "@/lib/validation"
+import { useAuthStore } from "@/store/auth-store"
 
 export default function RegisterPage() {
 	const router = useRouter()
+	const signUp = useAuthStore((s) => s.signUp)
 	const [showPassword, setShowPassword] = useState(false)
 
 	const {
@@ -44,6 +45,7 @@ export default function RegisterPage() {
 
 	const onSubmit = async (values: RegisterInput) => {
 		await new Promise((r) => setTimeout(r, 700))
+		signUp(values.email, values.name)
 		toast.success("Account created", { description: "We sent a verification code to " + values.email })
 		router.push(`/verify-email?email=${encodeURIComponent(values.email)}`)
 	}
@@ -148,8 +150,7 @@ export default function RegisterPage() {
 				</label>
 				<FieldError message={errors.terms?.message as string | undefined} />
 
-				<Button type="submit" size="lg" className="mt-1 w-full" disabled={isSubmitting}>
-					{isSubmitting ? <Loader /> : null}
+				<Button type="submit" size="lg" className="mt-1 w-full" loading={isSubmitting}>
 					Create account
 					<ArrowRight className="h-4 w-4" />
 				</Button>

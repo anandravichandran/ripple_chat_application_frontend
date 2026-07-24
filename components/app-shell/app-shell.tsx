@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { SidebarNav } from "./sidebar-nav"
@@ -9,17 +9,42 @@ import { NotificationDrawer } from "./notification-drawer"
 import { MobileDrawer } from "./mobile-drawer"
 import { MobileBottomNav } from "./mobile-bottom-nav"
 import { FloatingShapes } from "@/components/shared/floating-shapes"
+import { FullPageLoader } from "@/components/shared/loader"
 import { useAuthStore } from "@/store/auth-store"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
-	const { user, status, signIn } = useAuthStore()
+	const { user, status } = useAuthStore()
+	const [mounted, setMounted] = useState(false)
 
 	useEffect(() => {
-		// Auto-provision a demo session so the app is immediately explorable.
-		// Swap for real gating (e.g. router.push("/unauthorized")) when wiring auth.
-		if (status !== "authenticated") signIn()
-	}, [status, signIn, router])
+		setMounted(true)
+	}, [])
+
+	useEffect(() => {
+		if (!mounted) return
+		if (status === "unauthenticated") {
+			router.replace("/login")
+		}
+	}, [status, mounted, router])
+
+	if (!mounted || status === "idle") {
+		return (
+			<div className="relative min-h-screen">
+				<FloatingShapes />
+				<FullPageLoader label="Rippling…" />
+			</div>
+		)
+	}
+
+	if (status === "unauthenticated") {
+		return (
+			<div className="relative min-h-screen">
+				<FloatingShapes />
+				<FullPageLoader label="Redirecting…" />
+			</div>
+		)
+	}
 
 	return (
 		<div className="relative min-h-screen">

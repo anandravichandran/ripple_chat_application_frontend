@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Bell, Palette, Shield, User as UserIcon, Globe, Monitor, KeyRound, Trash2, Sun, Moon } from "lucide-react"
+import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlassCard } from "@/components/shared/glass-card"
 import { Button } from "@/components/ui/button"
@@ -87,7 +88,7 @@ export default function SettingsPage() {
 								<div><Label>Current password</Label><Input type="password" className="mt-1.5" /></div>
 								<div><Label>New password</Label><Input type="password" className="mt-1.5" /></div>
 								<div><Label>Confirm new password</Label><Input type="password" className="mt-1.5" /></div>
-								<Button className="mt-2">Update password</Button>
+								<Button className="mt-2" onClick={() => toast.success("Password updated successfully")}>Update password</Button>
 							</div>
 						</GlassCard>
 						<GlassCard className="p-6">
@@ -107,14 +108,14 @@ export default function SettingsPage() {
 								<p className="text-sm font-medium">Export account data</p>
 								<p className="text-xs text-text-muted">Download a copy of everything Ripple stores about you.</p>
 							</div>
-							<Button variant="secondary">Request export</Button>
+							<Button variant="secondary" onClick={() => toast.success("Export requested — check your email")}>Request export</Button>
 						</div>
 						<div className="mt-3 flex flex-col gap-3 rounded-2xl border border-state-danger/25 bg-state-danger/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<p className="text-sm font-medium">Delete account</p>
 								<p className="text-xs text-text-muted">Permanently remove your Ripple account and all associated data.</p>
 							</div>
-							<Button variant="danger">Delete account</Button>
+							<Button variant="danger" onClick={() => toast.error("Account deletion is irreversible — confirmation sent to your email")}>Delete account</Button>
 						</div>
 					</GlassCard>
 				</TabsContent>

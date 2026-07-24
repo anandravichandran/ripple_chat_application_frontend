@@ -1,7 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 import { Camera, Mail, Phone, Calendar, Clock, Github, Twitter, Linkedin, Globe, KeyRound, LogOut, Monitor, Smartphone } from "lucide-react"
+import { toast } from "sonner"
 import { GlassCard } from "@/components/shared/glass-card"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +15,7 @@ import { useAuthStore } from "@/store/auth-store"
 import { sessions, currentUser } from "@/lib/mock"
 
 export default function ProfilePage() {
+	const router = useRouter()
 	const user = useAuthStore((s) => s.user) ?? currentUser
 
 	return (
@@ -44,8 +47,8 @@ export default function ProfilePage() {
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
-							<Button variant="secondary" size="sm">Preview profile</Button>
-							<Button size="sm">Save changes</Button>
+							<Button variant="secondary" size="sm" onClick={() => toast.info("Profile preview coming soon")}>Preview profile</Button>
+							<Button size="sm" onClick={() => toast.success("Profile updated")}>Save changes</Button>
 						</div>
 					</div>
 
@@ -82,7 +85,7 @@ export default function ProfilePage() {
 							<GlassCard tone="subtle" className="p-4">
 								<h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-text-muted"><KeyRound className="h-3.5 w-3.5" />Password</h3>
 								<p className="text-xs text-text-secondary">Last changed 3 months ago.</p>
-								<Button variant="secondary" size="sm" className="mt-3 w-full">Change password</Button>
+								<Button variant="secondary" size="sm" className="mt-3 w-full" onClick={() => router.push("/settings")}>Change password</Button>
 							</GlassCard>
 						</div>
 					</div>
@@ -105,7 +108,7 @@ export default function ProfilePage() {
 								{s.current ? (
 									<Badge variant="success">Current</Badge>
 								) : (
-									<Button variant="ghost" size="sm" className="text-state-danger hover:bg-state-danger/10"><LogOut className="h-3.5 w-3.5" />Sign out</Button>
+									<Button variant="ghost" size="sm" className="text-state-danger hover:bg-state-danger/10" onClick={() => toast.success("Session signed out")}><LogOut className="h-3.5 w-3.5" />Sign out</Button>
 								)}
 							</li>
 						))}
@@ -123,7 +126,7 @@ export default function ProfilePage() {
 							<p className="font-medium">Ripple iOS</p>
 							<p className="text-[11px] text-text-muted">Bangalore · iPhone 15 · Session started yesterday</p>
 						</div>
-						<Button variant="secondary" size="sm" className="w-full">Sign out of all other sessions</Button>
+						<Button variant="secondary" size="sm" className="w-full" onClick={() => toast.success("Other sessions signed out")}>Sign out of all other sessions</Button>
 					</div>
 				</GlassCard>
 			</div>

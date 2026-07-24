@@ -56,14 +56,14 @@ export function UserMenu() {
 				<DropdownMenuItem onClick={() => toast("Help center coming soon")}>
 					<HelpCircle className="h-4 w-4" />Help & support
 				</DropdownMenuItem>
-				<DropdownMenuItem
-					danger
-					onClick={() => {
-						signOut()
-						toast("Signed out")
-						router.push("/")
-					}}
-				>
+			<DropdownMenuItem
+				danger
+				onClick={() => {
+					signOut()
+					toast.success("Signed out")
+					router.push("/")
+				}}
+			>
 					<LogOut className="h-4 w-4" />Sign out
 				</DropdownMenuItem>
 			</DropdownMenuContent>

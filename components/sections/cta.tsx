@@ -24,8 +24,8 @@ export default function CTA() {
           Set up a workspace in under a minute. No credit card required. Cancel anytime.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg"><Link href="#signup">Create Free Account <ArrowRight className="h-4 w-4" /></Link></Button>
-          <Button asChild size="lg" variant="ghost"><Link href="#contact">Contact Sales</Link></Button>
+          <Button asChild size="lg"><Link href="/register">Create Free Account <ArrowRight className="h-4 w-4" /></Link></Button>
+          <Button asChild size="lg" variant="ghost"><Link href="/register">Contact Sales</Link></Button>
         </div>
       </motion.div>
     </section>

@@ -35,8 +35,8 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button asChild variant="ghost" size="sm"><Link href="#login">Login</Link></Button>
-          <Button asChild size="sm"><Link href="#get-started">Get Started</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link href="/login">Login</Link></Button>
+          <Button asChild size="sm"><Link href="/register">Get Started</Link></Button>
         </div>
 
         <button aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)} className="grid h-10 w-10 place-items-center rounded-xl glass md:hidden focus-ring">
@@ -55,8 +55,8 @@ export default function Navbar() {
               ))}
             </nav>
             <div className="mt-3 flex gap-2">
-              <Button asChild variant="ghost" className="flex-1"><Link href="#login">Login</Link></Button>
-              <Button asChild className="flex-1"><Link href="#get-started">Get Started</Link></Button>
+              <Button asChild variant="ghost" className="flex-1"><Link href="/login">Login</Link></Button>
+              <Button asChild className="flex-1"><Link href="/register">Get Started</Link></Button>
             </div>
           </div>
         </div>

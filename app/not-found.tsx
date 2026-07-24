@@ -28,8 +28,8 @@ export default function NotFound() {
 					</p>
 					<div className="mt-7 flex flex-col gap-2 sm:flex-row sm:justify-center">
 						<Button asChild size="lg">
-							<Link href="/dashboard">
-								Go to dashboard
+							<Link href="/login">
+								Go to login
 								<ArrowRight className="h-4 w-4" />
 							</Link>
 						</Button>

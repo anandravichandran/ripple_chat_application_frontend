@@ -11,13 +11,15 @@ const config: Config = {
     },
     extend: {
       colors: {
-        bg: { DEFAULT: "#0A0A0A", elevated: "#111111" },
+        bg: { DEFAULT: "#0A0A0A", elevated: "#111111", primary: "#0A0A0A" },
         card: "rgba(255,255,255,0.05)",
         border: { DEFAULT: "rgba(255,255,255,0.08)", hover: "rgba(255,255,255,0.12)" },
-        accent: { DEFAULT: "#D9FF66", soft: "#C5F56A", cyan: "#A8F5FF" },
+        accent: { DEFAULT: "#D9FF66", soft: "#C5F56A", cyan: "#A8F5FF", primary: "#D9FF66", secondary: "#A8F5FF" },
         fg: { DEFAULT: "#FFFFFF", muted: "#B4B4B4" },
-        success: "#22C55E",
-        danger: "#EF4444",
+        text: { primary: "#FFFFFF", secondary: "rgba(255,255,255,0.65)", muted: "rgba(255,255,255,0.4)" },
+        "glass-border": "rgba(255,255,255,0.08)",
+        "glass-hover": "rgba(255,255,255,0.07)",
+        state: { danger: "#EF4444", success: "#22C55E", warn: "#F59E0B" },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui"],
@@ -34,6 +36,7 @@ const config: Config = {
         glass: "0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
         glow: "0 0 60px -10px rgba(217,255,102,0.35)",
         soft: "0 10px 40px -20px rgba(0,0,0,0.8)",
+        float: "0 8px 32px rgba(0,0,0,0.4)",
       },
       keyframes: {
         float: {

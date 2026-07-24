@@ -34,8 +34,8 @@ export default function Hero() {
 
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.18 }}
             className="mt-8 flex flex-wrap items-center gap-3">
-            <Button asChild size="lg"><Link href="#get-started">Start Chatting <ArrowRight className="h-4 w-4" /></Link></Button>
-            <Button asChild size="lg" variant="ghost"><Link href="#demo"><PlayCircle className="h-4 w-4" /> View Demo</Link></Button>
+            <Button asChild size="lg"><Link href="/register">Start Chatting <ArrowRight className="h-4 w-4" /></Link></Button>
+            <Button asChild size="lg" variant="ghost"><Link href="/register"><PlayCircle className="h-4 w-4" /> View Demo</Link></Button>
           </motion.div>
 
           <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.28 }}
