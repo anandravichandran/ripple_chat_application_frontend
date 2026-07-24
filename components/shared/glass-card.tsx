@@ -1,21 +1,34 @@
 "use client"
+
 import { motion, type HTMLMotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-type Props = HTMLMotionProps<"div"> & { hover?: boolean; gradientBorder?: boolean }
+type Props = HTMLMotionProps<"div"> & {
+	hoverLift?: boolean
+	tone?: "default" | "strong" | "subtle"
+}
 
-export function GlassCard({ className, hover = true, gradientBorder = false, children, ...props }: Props) {
-  return (
-    <motion.div
-      className={cn(
-        "relative rounded-3xl glass shadow-glass",
-        hover && "glass-hover transition-colors duration-300",
-        gradientBorder && "before:absolute before:inset-0 before:-z-10 before:rounded-3xl before:p-[1px] before:bg-gradient-to-br before:from-accent/40 before:via-transparent before:to-accent-cyan/30 before:opacity-0 hover:before:opacity-100 before:transition-opacity",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </motion.div>
-  )
+export function GlassCard({
+	className,
+	hoverLift,
+	tone = "default",
+	children,
+	...rest
+}: Props) {
+	return (
+		<motion.div
+			whileHover={hoverLift ? { y: -4 } : undefined}
+			transition={{ type: "spring", stiffness: 260, damping: 22 }}
+			className={cn(
+				"rounded-[24px] border shadow-glass backdrop-blur-xl",
+				tone === "default" && "border-glass-border bg-glass",
+				tone === "strong" && "border-glass-borderStrong bg-white/[0.06]",
+				tone === "subtle" && "border-glass-border/60 bg-white/[0.02]",
+				className,
+			)}
+			{...rest}
+		>
+			{children}
+		</motion.div>
+	)
 }
