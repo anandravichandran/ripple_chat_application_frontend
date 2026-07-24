@@ -5,9 +5,10 @@ export const emailSchema = z.string().trim().email("Enter a valid email")
 export const usernameSchema = z
 	.string()
 	.trim()
+	.toLowerCase()
 	.min(3, "At least 3 characters")
 	.max(24, "At most 24 characters")
-	.regex(/^[a-zA-Z0-9._-]+$/, "Letters, numbers, . _ -")
+	.regex(/^[a-z0-9_.]+$/, "Lowercase letters, numbers, . _")
 
 export const passwordSchema = z
 	.string()

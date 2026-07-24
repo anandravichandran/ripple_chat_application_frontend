@@ -154,7 +154,10 @@ function toSession(b: BackendSession): Session {
 }
 
 function extractData<T>(response: { data: { success: boolean; data: T } }): T {
-	return response.data.data
+	if (!response.data || typeof response.data.success !== "boolean") {
+		throw new Error("API response missing success field")
+	}
+	return response.data.data as T
 }
 
 // ---- Auth API ----
