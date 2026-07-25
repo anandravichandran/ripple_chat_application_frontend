@@ -24,12 +24,12 @@ export const metadata: Metadata = {
   },
 }
 
-export const viewport: Viewport = { themeColor: "#0A0A0A", width: "device-width", initialScale: 1 }
+export const viewport: Viewport = { width: "device-width", initialScale: 1 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
-      <body className="min-h-screen bg-bg text-fg antialiased">
+    <html lang="en" className={`${inter.variable} ${jakarta.variable}`} suppressHydrationWarning>
+      <body className="min-h-screen antialiased" style={{ backgroundColor: "var(--color-bg)", color: "var(--color-text-primary)" }}>
         <Providers>{children}</Providers>
       </body>
     </html>

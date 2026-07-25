@@ -11,15 +11,35 @@ const config: Config = {
     },
     extend: {
       colors: {
-        bg: { DEFAULT: "#0A0A0A", elevated: "#111111", primary: "#0A0A0A" },
-        card: "rgba(255,255,255,0.05)",
-        border: { DEFAULT: "rgba(255,255,255,0.08)", hover: "rgba(255,255,255,0.12)" },
-        accent: { DEFAULT: "#D9FF66", soft: "#C5F56A", cyan: "#A8F5FF", primary: "#D9FF66", secondary: "#A8F5FF" },
-        fg: { DEFAULT: "#FFFFFF", muted: "#B4B4B4" },
-        text: { primary: "#FFFFFF", secondary: "rgba(255,255,255,0.65)", muted: "rgba(255,255,255,0.4)" },
-        "glass-border": "rgba(255,255,255,0.08)",
-        "glass-hover": "rgba(255,255,255,0.07)",
-        state: { danger: "#EF4444", success: "#22C55E", warn: "#F59E0B" },
+        bg: {
+          DEFAULT: "var(--color-bg)",
+          elevated: "var(--color-bg-elevated)",
+          primary: "var(--color-bg)",
+        },
+        card: "var(--color-card)",
+        border: {
+          DEFAULT: "var(--color-glass-border)",
+          hover: "var(--color-glass-border-strong)",
+        },
+        accent: {
+          DEFAULT: "var(--color-accent)",
+          soft: "var(--color-accent-soft)",
+          cyan: "var(--color-accent-cyan)",
+          primary: "var(--color-accent-primary)",
+          secondary: "var(--color-accent-secondary)",
+        },
+        fg: {
+          DEFAULT: "var(--color-text-primary)",
+          muted: "var(--color-text-secondary)",
+        },
+        text: {
+          primary: "var(--color-text-primary)",
+          secondary: "var(--color-text-secondary)",
+          muted: "var(--color-text-muted)",
+        },
+        "glass-border": "var(--color-glass-border)",
+        "glass-hover": "var(--color-glass-hover)",
+        state: { danger: "var(--color-state-danger)", success: "var(--color-state-success)", warn: "var(--color-state-warn)" },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui"],
@@ -33,10 +53,10 @@ const config: Config = {
       borderRadius: { xl: "1rem", "2xl": "1.25rem", "3xl": "1.5rem" },
       backdropBlur: { glass: "20px" },
       boxShadow: {
-        glass: "0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
+        glass: "var(--shadow-glass)",
         glow: "0 0 60px -10px rgba(217,255,102,0.35)",
         soft: "0 10px 40px -20px rgba(0,0,0,0.8)",
-        float: "0 8px 32px rgba(0,0,0,0.4)",
+        float: "var(--shadow-float)",
       },
       keyframes: {
         float: {

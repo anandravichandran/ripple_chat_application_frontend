@@ -15,6 +15,7 @@ export function useSocketEvents() {
 	const removeOnline = useOnlineStore((s) => s.remove)
 	const setOnline = useOnlineStore((s) => s.setOnline)
 	const setTyping = useRoomStore((s) => s.setTyping)
+	const setUser = useAuthStore((s) => s.setUser)
 	const status = useAuthStore((s) => s.status)
 	const qc = useQueryClient()
 	const heartbeatRef = useRef<number>(0)
@@ -82,9 +83,11 @@ export function useSocketEvents() {
 			qc.invalidateQueries({ queryKey: ["users"] })
 			qc.invalidateQueries({ queryKey: ["admin"] })
 		}
-		const onUserUpdated = () => {
+		const onUserUpdated = (data: { user?: Record<string, unknown> }) => {
 			qc.invalidateQueries({ queryKey: ["users"] })
 			qc.invalidateQueries({ queryKey: ["admin"] })
+			qc.invalidateQueries({ queryKey: ["profile"] })
+			if (data?.user) setUser(data.user as any)
 		}
 
 		const onTyping = ({ roomId, username }: { roomId: string; username: string }) => {

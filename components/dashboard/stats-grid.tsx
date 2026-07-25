@@ -4,32 +4,31 @@ import { motion } from "framer-motion"
 import { Users, MessageSquare, Hash, Zap } from "lucide-react"
 import { GlassCard } from "@/components/shared/glass-card"
 import { AnimatedCounter } from "@/components/shared/animated-counter"
+import { useRooms } from "@/hooks/use-rooms"
+import { useOnlineStore } from "@/store/online-store"
+import { useSocketStore } from "@/store/socket-store"
 import type { LucideIcon } from "lucide-react"
 
-type Stat = {
-	icon: LucideIcon
-	label: string
-	value: number
-	suffix?: string
-	delta: string
-	tone: "accent" | "aqua" | "success" | "warn"
-}
-
-const stats: Stat[] = [
-	{ icon: Users, label: "Online now", value: 128, delta: "+12 this hour", tone: "success" },
-	{ icon: MessageSquare, label: "Unread messages", value: 12, delta: "3 mentions", tone: "accent" },
-	{ icon: Hash, label: "Active rooms", value: 24, delta: "6 joined by you", tone: "aqua" },
-	{ icon: Zap, label: "Latency", value: 42, suffix: "ms", delta: "stable", tone: "warn" },
-]
-
-const toneMap = {
-	accent: "bg-accent-primary/10 text-accent-primary border-accent-primary/25",
-	aqua: "bg-accent-secondary/10 text-accent-secondary border-accent-secondary/25",
-	success: "bg-state-success/10 text-state-success border-state-success/25",
-	warn: "bg-state-warn/10 text-state-warn border-state-warn/25",
-}
-
 export function StatsGrid() {
+	const { data: rooms } = useRooms()
+	const onlineCount = useOnlineStore((s) => s.onlineIds.size)
+	const latency = useSocketStore((s) => s.latencyMs)
+	const roomCount = rooms?.length ?? 0
+
+	const stats = [
+		{ icon: Users, label: "Online now", value: onlineCount, delta: onlineCount === 1 ? "1 user connected" : `${onlineCount} users connected`, tone: "success" as const },
+		{ icon: MessageSquare, label: "Unread messages", value: rooms?.reduce((sum, r) => sum + (r.unread ?? 0), 0) ?? 0, delta: "across all rooms", tone: "accent" as const },
+		{ icon: Hash, label: "Active rooms", value: roomCount, delta: roomCount === 1 ? "1 room joined" : `${roomCount} rooms joined`, tone: "aqua" as const },
+		{ icon: Zap, label: "Latency", value: latency ?? 0, suffix: "ms", delta: latency ? `socket ${latency < 100 ? "healthy" : "degraded"}` : "pending", tone: "warn" as const },
+	]
+
+	const toneMap = {
+		accent: "bg-accent-primary/10 text-accent-primary border-accent-primary/25",
+		aqua: "bg-accent-secondary/10 text-accent-secondary border-accent-secondary/25",
+		success: "bg-state-success/10 text-state-success border-state-success/25",
+		warn: "bg-state-warn/10 text-state-warn border-state-warn/25",
+	}
+
 	return (
 		<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 			{stats.map((s, i) => {

@@ -1,7 +1,8 @@
 "use client"
 
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Bell, Palette, Shield, User as UserIcon, Globe, Monitor, KeyRound, Trash2, Sun, Moon } from "lucide-react"
+import { Bell, Palette, Shield, User as UserIcon, Globe, Monitor, KeyRound, Trash2, Sun, Moon, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlassCard } from "@/components/shared/glass-card"
@@ -12,9 +13,43 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/shared/page-header"
 import { useThemeStore } from "@/store/theme-store"
+import { useAuthStore } from "@/store/auth-store"
+import { useUpdateProfile } from "@/hooks/use-profile"
 import { cn } from "@/lib/utils"
 
 export default function SettingsPage() {
+	const user = useAuthStore((s) => s.user)
+	const setUser = useAuthStore((s) => s.setUser)
+	const updateProfile = useUpdateProfile()
+
+	const [name, setName] = useState(user?.name ?? "")
+	const [username, setUsername] = useState(user?.username ?? "")
+	const [email, setEmail] = useState(user?.email ?? "")
+	const [phone, setPhone] = useState(user?.phone ?? "")
+	const [bio, setBio] = useState(user?.bio ?? "")
+
+	useEffect(() => {
+		if (user) {
+			setName(user.name ?? "")
+			setUsername(user.username ?? "")
+			setEmail(user.email ?? "")
+			setPhone(user.phone ?? "")
+			setBio(user.bio ?? "")
+		}
+	}, [user])
+
+	const handleSave = useCallback(async () => {
+		const body: Record<string, unknown> = {}
+		if (name !== user?.name) body.name = name
+		if (bio !== user?.bio) body.bio = bio || null
+		if (phone !== user?.phone) body.phone = phone || null
+		if (Object.keys(body).length === 0) { toast.info("No changes"); return }
+		try {
+			await updateProfile.mutateAsync(body as any)
+			toast.success("Profile updated")
+		} catch { toast.error("Failed to update profile") }
+	}, [name, bio, phone, user, updateProfile])
+
 	return (
 		<div className="space-y-6">
 			<PageHeader eyebrow="Preferences" title="Settings" description="Tune Ripple to match how you work." />
@@ -33,24 +68,27 @@ export default function SettingsPage() {
 					<GlassCard className="p-6">
 						<SectionTitle title="Your profile" description="Basic information visible across Ripple." />
 						<div className="grid gap-4 sm:grid-cols-2">
-							<div><Label>Display name</Label><Input defaultValue="Anand Ravichandran" className="mt-1.5" /></div>
-							<div><Label>Username</Label><Input defaultValue="anand" className="mt-1.5" /></div>
-							<div><Label>Email</Label><Input defaultValue="anand@ripple.chat" className="mt-1.5" /></div>
+							<div><Label>Display name</Label><Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" /></div>
+							<div><Label>Username</Label><Input value={username} className="mt-1.5" disabled /></div>
+							<div><Label>Email</Label><Input value={email} className="mt-1.5" disabled /></div>
 							<div>
-								<Label>Language</Label>
-								<div className="relative mt-1.5">
-									<Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-									<select className="h-10 w-full appearance-none rounded-2xl border border-glass-border bg-white/[0.03] pl-9 pr-3 text-sm text-text-primary focus:border-accent-primary/40 focus:outline-none">
-										<option>English (US)</option>
-										<option>English (UK)</option>
-										<option>Español</option>
-										<option>Français</option>
-										<option>Deutsch</option>
-										<option>日本語</option>
-									</select>
-								</div>
+								<Label>Phone</Label>
+								<Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5" placeholder="+1 (555) 000-0000" />
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Bio</Label>
+								<textarea
+									rows={3}
+									value={bio}
+									onChange={(e) => setBio(e.target.value)}
+									className="mt-1.5 w-full rounded-2xl border border-glass-border bg-white/[0.03] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary/40 focus:outline-none"
+								/>
 							</div>
 						</div>
+						<Button className="mt-4" size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
+							{updateProfile.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+							Save changes
+						</Button>
 					</GlassCard>
 				</TabsContent>
 
@@ -156,9 +194,9 @@ function AppearanceSection() {
 	return (
 		<div className="space-y-6">
 			<GlassCard className="p-6">
-				<SectionTitle title="Theme" description="Ripple ships with a premium dark theme. Light mode is coming." />
+				<SectionTitle title="Theme" description="Ripple ships with a premium dark theme. Light mode is available." />
 				<div className="grid gap-3 sm:grid-cols-2">
-					{(["dark", "light"] as const).map((m) => (
+					{(["dark", "light", "system"] as const).map((m) => (
 						<motion.button
 							key={m}
 							type="button"
@@ -171,21 +209,21 @@ function AppearanceSection() {
 						>
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-2">
-									<div className={cn("flex h-8 w-8 items-center justify-center rounded-xl border border-glass-border", m === "dark" ? "bg-[#0A0A0A]" : "bg-white")}> 
-										{m === "dark" ? <Moon className="h-3.5 w-3.5 text-accent-primary" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
+									<div className={cn("flex h-8 w-8 items-center justify-center rounded-xl border border-glass-border", m === "dark" ? "bg-[#0A0A0A]" : m === "light" ? "bg-white" : "bg-[#0A0A0A]/60")}> 
+										{m === "dark" ? <Moon className="h-3.5 w-3.5 text-accent-primary" /> : m === "light" ? <Sun className="h-3.5 w-3.5 text-amber-500" /> : <Monitor className="h-3.5 w-3.5 text-accent-secondary" />}
 									</div>
 									<p className="text-sm font-medium capitalize">{m} mode</p>
 								</div>
-								{m === "light" ? <Badge variant="outline">Preview</Badge> : mode === m ? <Badge variant="accent">Selected</Badge> : null}
+								{mode === m ? <Badge variant="accent">Selected</Badge> : null}
 							</div>
-							<div className={cn("mt-4 h-24 overflow-hidden rounded-xl border border-glass-border p-3", m === "dark" ? "bg-[#0A0A0A]" : "bg-white text-black")}> 
+							<div className={cn("mt-4 h-24 overflow-hidden rounded-xl border border-glass-border p-3", m === "dark" ? "bg-[#0A0A0A]" : m === "light" ? "bg-white text-black" : "bg-[#0A0A0A]/40")}> 
 								<div className="flex items-center gap-2 text-xs">
 									<span className="h-2 w-2 rounded-full bg-accent-primary" />
 									<span className={m === "dark" ? "text-text-muted" : "text-neutral-500"}>Preview</span>
 								</div>
 								<div className="mt-2 space-y-1.5">
-									<div className={cn("h-1.5 w-3/4 rounded-full", m === "dark" ? "bg-white/10" : "bg-neutral-200")} />
-									<div className={cn("h-1.5 w-1/2 rounded-full", m === "dark" ? "bg-white/10" : "bg-neutral-200")} />
+									<div className={cn("h-1.5 w-3/4 rounded-full", m === "dark" ? "bg-white/10" : m === "light" ? "bg-neutral-200" : "bg-white/10")} />
+									<div className={cn("h-1.5 w-1/2 rounded-full", m === "dark" ? "bg-white/10" : m === "light" ? "bg-neutral-200" : "bg-white/10")} />
 								</div>
 							</div>
 						</motion.button>

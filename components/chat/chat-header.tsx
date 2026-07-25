@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Lock, Users, Pin, Bell, Search, MoreHorizontal, Phone, Video, ArrowLeft } from "lucide-react"
+import { Lock, Users, Pin, Bell, Search, MoreHorizontal, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import type { Room } from "@/lib/types"
 import { Button } from "@/components/ui/button"
@@ -41,8 +41,6 @@ export function ChatHeader({ room, onToggleInfo }: { room: Room; onToggleInfo?: 
 			<div className="hidden items-center gap-1 sm:flex">
 				<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="iconSm" aria-label="Search"><Search className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Search in room</TooltipContent></Tooltip>
 				<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="iconSm" aria-label="Pinned"><Pin className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Pinned messages</TooltipContent></Tooltip>
-				<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="iconSm" aria-label="Voice"><Phone className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Voice call</TooltipContent></Tooltip>
-				<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="iconSm" aria-label="Video"><Video className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Video call</TooltipContent></Tooltip>
 				<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="iconSm" aria-label="Notifications"><Bell className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Notifications</TooltipContent></Tooltip>
 			</div>
 			<Button variant="ghost" size="iconSm" onClick={onToggleInfo} aria-label="Room info"><MoreHorizontal className="h-4 w-4" /></Button>

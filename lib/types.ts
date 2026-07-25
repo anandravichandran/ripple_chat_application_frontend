@@ -22,6 +22,7 @@ export interface Room {
 	description: string
 	icon: string
 	visibility: "public" | "private"
+	isDirect?: boolean
 	category: string
 	members: number
 	online: number
