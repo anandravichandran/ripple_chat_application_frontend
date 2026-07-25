@@ -78,6 +78,15 @@ export function useSocketEvents() {
 		const onRoomUpdated = () => qc.invalidateQueries({ queryKey: ["rooms"] })
 		const onRoomDeleted = () => qc.invalidateQueries({ queryKey: ["rooms"] })
 
+		const onUserCreated = () => {
+			qc.invalidateQueries({ queryKey: ["users"] })
+			qc.invalidateQueries({ queryKey: ["admin"] })
+		}
+		const onUserUpdated = () => {
+			qc.invalidateQueries({ queryKey: ["users"] })
+			qc.invalidateQueries({ queryKey: ["admin"] })
+		}
+
 		const onTyping = ({ roomId, username }: { roomId: string; username: string }) => {
 			setTyping(roomId, [username])
 		}
@@ -108,6 +117,8 @@ export function useSocketEvents() {
 		socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated)
 		socket.on(SOCKET_EVENTS.ROOM_UPDATED, onRoomUpdated)
 		socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted)
+		socket.on(SOCKET_EVENTS.USER_CREATED, onUserCreated)
+		socket.on(SOCKET_EVENTS.USER_UPDATED, onUserUpdated)
 		socket.on(SOCKET_EVENTS.TYPING, onTyping)
 		socket.on(SOCKET_EVENTS.STOP_TYPING, onStopTyping)
 		socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, onNotification)

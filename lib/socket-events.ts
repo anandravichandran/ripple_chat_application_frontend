@@ -21,6 +21,8 @@ export const SOCKET_EVENTS = {
 	TYPING: "typing",
 	STOP_TYPING: "stopTyping",
 
+	USER_CREATED: "userCreated",
+	USER_UPDATED: "userUpdated",
 	USER_ONLINE: "userOnline",
 	USER_OFFLINE: "userOffline",
 	PRESENCE_SYNC: "presenceSync",

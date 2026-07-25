@@ -301,6 +301,18 @@ export const messagesApi = {
 
 	markDelivered: (id: string) =>
 		api.post(`/messages/${id}/delivered`).then(extractData),
+
+	searchGlobal: (params: { q: string; limit?: number; roomId?: string }) =>
+		api.get("/messages/search/global", { params }).then((res) => extractData<{ items: GlobalMessageResult[] }>(res)),
+}
+
+type GlobalMessageResult = {
+	id: string
+	text: string | null
+	roomId: string
+	createdAt: string
+	author: { id: string; name: string; username: string; avatarUrl: string | null } | null
+	room: { id: string; name: string } | null
 }
 
 // ---- Notifications API ----
@@ -319,6 +331,120 @@ export const notificationsApi = {
 
 	delete: (id: string) =>
 		api.delete(`/notifications/${id}`).then(extractData),
+}
+
+// ---- Admin API ----
+export const adminApi = {
+	listUsers: (params?: { q?: string; role?: string; status?: string; isVerified?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) =>
+		api.get("/admin/users", { params }).then((res) => {
+			const d = extractData<{ items: BackendUser[]; meta: PaginatedMeta }>(res)
+			return { users: d.items.map(toUser), meta: d.meta }
+		}),
+
+	getUser: (id: string) =>
+		api.get(`/admin/users/${id}`).then((res) => toUser(extractData<BackendUser>(res))),
+
+	updateUserRole: (id: string, role: string) =>
+		api.patch(`/admin/users/${id}/role`, { role }).then(extractData),
+
+	suspendUser: (id: string) =>
+		api.post(`/admin/users/${id}/suspend`).then(extractData),
+
+	unsuspendUser: (id: string) =>
+		api.post(`/admin/users/${id}/unsuspend`).then(extractData),
+
+	deleteUser: (id: string) =>
+		api.delete(`/admin/users/${id}`).then(extractData),
+
+	getAnalytics: (days = 30) =>
+		api.get("/admin/analytics", { params: { days } }).then((res) => {
+			type Analytics = {
+				totalUsers: number
+				onlineUsers: number
+				verifiedUsers: number
+				activeUsers: number
+				totalRooms: number
+				totalMessages: number
+				messagesToday: number
+				roomsToday: number
+				newUsersToday: number
+				topRooms: { id: string; name: string; messages: number; members: number }[]
+				topUsers: { id: string; name: string; username: string; messages: number }[]
+				timeSeries: { date: string; users: number; messages: number; rooms: number }[]
+			}
+			return extractData<Analytics>(res)
+		}),
+}
+
+// ---- Audit API ----
+export const auditApi = {
+	list: (params?: { action?: string; actorId?: string; targetType?: string; page?: number; limit?: number }) =>
+		api.get("/audit", { params }).then((res) => {
+			const d = extractData<{ items: AuditLogEntry[]; meta: PaginatedMeta }>(res)
+			return { items: d.items, meta: d.meta }
+		}),
+}
+
+type AuditLogEntry = {
+	id: string
+	action: string
+	actorId: string | null
+	actor: { id: string; name: string; username: string; avatarUrl: string | null } | null
+	targetId: string | null
+	targetType: string | null
+	metadata: Record<string, unknown> | null
+	ip: string | null
+	createdAt: string
+}
+
+// ---- Invites API ----
+export const invitesApi = {
+	invite: (roomId: string, inviteeId: string, message?: string) =>
+		api.post(`/invites/${roomId}/invite`, { inviteeId, message }).then(extractData),
+
+	accept: (id: string) => api.post(`/invites/${id}/accept`).then(extractData),
+
+	decline: (id: string) => api.post(`/invites/${id}/decline`).then(extractData),
+
+	cancel: (id: string) => api.post(`/invites/${id}/cancel`).then(extractData),
+
+	listMyInvites: (status?: string) =>
+		api.get("/invites", { params: { status } }).then(extractData),
+
+	listRoomInvites: (roomId: string) =>
+		api.get(`/invites/room/${roomId}`).then(extractData),
+}
+
+// ---- Reports API ----
+export const reportsApi = {
+	create: (data: { targetType: string; targetId: string; reason: string; description?: string }) =>
+		api.post("/reports", data).then(extractData),
+
+	list: (params?: { status?: string; targetType?: string; page?: number; limit?: number }) =>
+		api.get("/reports", { params }).then((res) => {
+			const d = extractData<{ items: ReportEntry[]; meta: PaginatedMeta }>(res)
+			return { items: d.items, meta: d.meta }
+		}),
+
+	resolve: (id: string, resolution: string) =>
+		api.post(`/reports/${id}/resolve`, { resolution }).then(extractData),
+
+	dismiss: (id: string, resolution?: string) =>
+		api.post(`/reports/${id}/dismiss`, { resolution }).then(extractData),
+}
+
+type ReportEntry = {
+	id: string
+	reporter: { id: string; name: string; username: string; avatarUrl: string | null }
+	reviewer: { id: string; name: string; username: string } | null
+	targetType: string
+	targetId: string
+	reason: string
+	description: string | null
+	status: string
+	resolution: string | null
+	createdAt: string
+	resolvedAt: string | null
 }
 
 // ---- Health ----
