@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/auth/field-error"
 import { createRoomSchema, type CreateRoomValues } from "@/lib/validation"
 import { cn } from "@/lib/utils"
+import { roomsApi } from "@/lib/api"
 
 export function CreateRoomModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
 	const [success, setSuccess] = useState(false)
@@ -40,10 +41,20 @@ export function CreateRoomModal({ open, onOpenChange }: { open: boolean; onOpenC
 	}, [open, reset])
 
 	async function onSubmit(values: CreateRoomValues) {
-		await new Promise((r) => setTimeout(r, 900))
-		setSuccess(true)
-		toast.success(`“${values.name}” is ready`)
-		setTimeout(() => onOpenChange(false), 1400)
+		try {
+			await roomsApi.create({
+				name: values.name,
+				description: values.description || undefined,
+				icon: values.icon || undefined,
+				visibility: values.visibility.toUpperCase() as "PUBLIC" | "PRIVATE",
+				password: values.password || undefined,
+			})
+			setSuccess(true)
+			toast.success(`“${values.name}” is ready`)
+			setTimeout(() => onOpenChange(false), 1400)
+		} catch {
+			toast.error("Failed to create room")
+		}
 	}
 
 	return (

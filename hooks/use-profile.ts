@@ -18,8 +18,8 @@ export function useUpdateProfile() {
 	const qc = useQueryClient()
 	const setUser = useAuthStore((s) => s.setUser)
 	return useMutation({
-		mutationFn: (body: Partial<Pick<User, "name" | "bio" | "phone" | "status">>) =>
-			usersApi.updateMe(body),
+		mutationFn: (body: Record<string, unknown>) =>
+			usersApi.updateMe(body as Parameters<typeof usersApi.updateMe>[0]),
 		onSuccess: (data) => {
 			setUser(data)
 			qc.invalidateQueries({ queryKey: ["profile"] })
@@ -32,6 +32,18 @@ export function useUpdateAvatar() {
 	const setUser = useAuthStore((s) => s.setUser)
 	return useMutation({
 		mutationFn: (file: File) => usersApi.updateAvatar(file),
+		onSuccess: (data) => {
+			setUser(data)
+			qc.invalidateQueries({ queryKey: ["profile"] })
+		},
+	})
+}
+
+export function useUpdateBanner() {
+	const qc = useQueryClient()
+	const setUser = useAuthStore((s) => s.setUser)
+	return useMutation({
+		mutationFn: (file: File) => usersApi.updateBanner(file),
 		onSuccess: (data) => {
 			setUser(data)
 			qc.invalidateQueries({ queryKey: ["profile"] })

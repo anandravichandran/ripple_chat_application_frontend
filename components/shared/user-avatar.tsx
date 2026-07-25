@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import Image from "next/image"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { StatusDot } from "./status-dot"
 import { cn } from "@/lib/utils"
 import type { UserStatus } from "@/lib/types"
@@ -12,13 +13,15 @@ const sizeMap = {
 } as const
 
 export function UserAvatar({
+	src,
 	initials,
 	size = "md",
 	status,
 	ring,
 	className,
 }: {
-	initials: string
+	src?: string | null
+	initials?: string
 	size?: keyof typeof sizeMap
 	status?: UserStatus
 	ring?: boolean
@@ -32,7 +35,8 @@ export function UserAvatar({
 					ring && "ring-4 ring-bg-primary ring-offset-0",
 				)}
 			>
-				<AvatarFallback>{initials}</AvatarFallback>
+				{src && src !== "" ? <AvatarImage src={src} alt={initials ?? ""} /> : null}
+				<AvatarFallback>{initials ?? "?"}</AvatarFallback>
 			</Avatar>
 			{status ? (
 				<span className="absolute -bottom-0.5 -right-0.5">

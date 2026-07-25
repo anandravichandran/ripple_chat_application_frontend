@@ -1,8 +1,18 @@
 import axios from "axios"
 import type { User, Room, Message, MessageKind, Notification, Session, UserStatus } from "./types"
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api"
+const API_ORIGIN = API_BASE.replace(/\/api\/?$/, "")
+
+export function resolveImageUrl(url: string | null | undefined): string {
+	if (!url) return ""
+	if (url.startsWith("http://") || url.startsWith("https://")) return url
+	if (url.startsWith("/uploads/")) return `${API_ORIGIN}${url}`
+	return url
+}
+
 export const api = axios.create({
-	baseURL: process.env.NEXT_PUBLIC_API_URL ?? "/api",
+	baseURL: API_BASE,
 	withCredentials: true,
 	timeout: 20000,
 })
@@ -63,7 +73,7 @@ api.interceptors.response.use(
 
 // ---- type helpers ----
 type BackendUser = {
-	id: string; name: string; username: string; email: string; avatarUrl: string | null
+	id: string; name: string; username: string; email: string; avatarUrl: string | null; bannerUrl: string | null
 	bio: string | null; phone: string | null; socials: Record<string, string> | null
 	role: "USER" | "MODERATOR" | "ADMIN"; status: "ONLINE" | "IDLE" | "DND" | "OFFLINE"
 	isVerified: boolean; lastSeen: string; lastLoginAt: string | null; createdAt: string
@@ -107,7 +117,8 @@ type PaginatedMeta = { total: number; page: number; limit: number; totalPages: n
 function toUser(b: BackendUser): User {
 	return {
 		id: b.id, name: b.name, username: b.username, email: b.email,
-		avatar: b.avatarUrl ?? "", bio: b.bio ?? undefined, phone: b.phone ?? undefined,
+		avatar: resolveImageUrl(b.avatarUrl), bannerUrl: resolveImageUrl(b.bannerUrl) || undefined,
+		bio: b.bio ?? undefined, phone: b.phone ?? undefined,
 		status: b.status.toLowerCase() as UserStatus,
 		role: b.role.toLowerCase() as User["role"],
 		joinedAt: b.createdAt, lastSeen: b.lastSeen,
@@ -125,14 +136,16 @@ function toRoom(b: BackendRoomItem): Room {
 	}
 }
 
-function toMessage(b: BackendMessage): Message {
+export function toMessage(b: BackendMessage): Message {
 	const kindMap: Record<string, MessageKind> = { TEXT: "text", IMAGE: "image", FILE: "file", SYSTEM: "text" }
 	return {
-		id: b.id, authorId: b.author.id, text: b.text ?? "", at: b.createdAt,
+		id: b.id, authorId: b.author.id, authorName: b.author.name,
+		text: b.text ?? "", at: b.createdAt,
+		avatar: resolveImageUrl(b.author.avatarUrl),
 		type: kindMap[b.type] ?? "text", status: b.deliveredAt ? "delivered" : "sent",
 		pinned: b.pinned, edited: b.edited, mentions: [],
-		reactions: b.reactions.map((r) => ({ emoji: r.emoji, count: 1, byMe: false })),
-		replyTo: b.replyTo ? { author: b.replyTo.author.name, preview: b.replyTo.text ?? "" } : undefined,
+		reactions: (b.reactions ?? []).map((r) => ({ emoji: r.emoji, count: 1, byMe: false })),
+		replyTo: b.replyTo ? { author: b.replyTo.author?.name ?? "Unknown", preview: b.replyTo.text ?? "" } : undefined,
 	}
 }
 
@@ -196,13 +209,19 @@ export const authApi = {
 export const usersApi = {
 	getMe: () => api.get("/users/me").then((res) => toUser(extractData<BackendUser>(res))),
 
-	updateMe: (body: Partial<Pick<User, "name" | "bio" | "phone" | "status">>) =>
+	updateMe: (body: Record<string, unknown>) =>
 		api.patch("/users/me", body).then((res) => toUser(extractData<BackendUser>(res))),
 
 	updateAvatar: (file: File) => {
 		const fd = new FormData()
 		fd.append("avatar", file)
 		return api.patch("/users/avatar", fd).then((res) => toUser(extractData<BackendUser>(res)))
+	},
+
+	updateBanner: (file: File) => {
+		const fd = new FormData()
+		fd.append("avatar", file)
+		return api.patch("/users/banner", fd).then((res) => toUser(extractData<BackendUser>(res)))
 	},
 
 	search: (q: string, page = 1, limit = 20) =>
@@ -223,14 +242,14 @@ export const roomsApi = {
 	create: (body: { name: string; description?: string; icon?: string; category?: string; visibility?: string; password?: string }) =>
 		api.post("/rooms", body).then(extractData),
 
-	list: (params?: { q?: string; category?: string; visibility?: string; pinned?: boolean; recentlyJoined?: boolean; page?: number; limit?: number }) =>
+	list: (params?: { q?: string; category?: string; visibility?: string; pinned?: boolean; recentlyJoined?: boolean; isDirect?: string; page?: number; limit?: number }) =>
 		api.get("/rooms", { params }).then((res) => {
 			const d = extractData<{ items: BackendRoomItem[]; meta: PaginatedMeta }>(res)
 			return { rooms: d.items.map(toRoom), meta: d.meta }
 		}),
 
-	get: (id: string): Promise<Record<string, unknown>> =>
-		api.get(`/rooms/${id}`).then((r) => r.data.data as Record<string, unknown>),
+	get: (id: string) =>
+		api.get(`/rooms/${id}`).then((r) => r.data.data as { id: string; name: string; icon: string | null; description: string | null; isDirect: boolean; visibility: string; memberCount: number; viewerRole: string | null }),
 
 	update: (id: string, body: Record<string, unknown>) =>
 		api.patch(`/rooms/${id}`, body).then(extractData),
@@ -254,7 +273,7 @@ export const messagesApi = {
 		}),
 
 	create: (roomId: string, body: { text?: string; type?: string; replyToId?: string; mentions?: string[] }) =>
-		api.post(`/rooms/${roomId}/messages`, body).then(extractData),
+		api.post(`/rooms/${roomId}/messages`, body).then((res) => toMessage(extractData<BackendMessage>(res))),
 
 	pinned: (roomId: string) =>
 		api.get(`/rooms/${roomId}/messages/pinned`).then((res) => {

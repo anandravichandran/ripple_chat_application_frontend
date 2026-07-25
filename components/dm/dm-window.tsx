@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { time } from "@/lib/format"
+import { useAuthStore } from "@/store/auth-store"
+import { messagesApi } from "@/lib/api"
 import type { Conversation, Message } from "@/lib/types"
-import { currentUser } from "@/lib/mock"
 import { cn } from "@/lib/utils"
 
 export function DmWindow({ conversation, seed }: { conversation: Conversation; seed: Message[] }) {
@@ -17,6 +18,7 @@ export function DmWindow({ conversation, seed }: { conversation: Conversation; s
 	const [text, setText] = useState("")
 	const [typing, setTyping] = useState<string[]>([])
 	const endRef = useRef<HTMLDivElement>(null)
+	const currentUser = useAuthStore((s) => s.user)
 
 	useEffect(() => {
 		endRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -30,10 +32,10 @@ export function DmWindow({ conversation, seed }: { conversation: Conversation; s
 		}
 	}, [conversation])
 
-	function send() {
+	async function send() {
 		const v = text.trim()
-		if (!v) return
-		const m: Message = {
+		if (!v || !currentUser) return
+		const optimistic: Message = {
 			id: `dm_${Date.now()}`,
 			authorId: currentUser.id,
 			text: v,
@@ -41,11 +43,17 @@ export function DmWindow({ conversation, seed }: { conversation: Conversation; s
 			type: "text",
 			status: "sent",
 		}
-		setItems((p) => [...p, m])
+		setItems((p) => [...p, optimistic])
 		setText("")
-		setTimeout(() => setItems((p) => p.map((x) => (x.id === m.id ? { ...x, status: "delivered" } : x))), 400)
-		setTimeout(() => setItems((p) => p.map((x) => (x.id === m.id ? { ...x, status: "seen" } : x))), 1400)
+		try {
+			await messagesApi.create(conversation.id, { text: v, type: "TEXT" })
+			setItems((p) => p.map((x) => (x.id === optimistic.id ? { ...x, status: "delivered" } : x)))
+		} catch {
+			setItems((p) => p.map((x) => (x.id === optimistic.id ? { ...x, status: "error" } : x)))
+		}
 	}
+
+	if (!currentUser) return null
 
 	return (
 		<div className="flex h-full min-w-0 flex-1 flex-col">
@@ -86,7 +94,8 @@ export function DmWindow({ conversation, seed }: { conversation: Conversation; s
 								>
 									<p className="whitespace-pre-wrap break-words">{m.text}</p>
 									<p className={cn("mt-1 text-[10px]", isOwn ? "text-accent-primary/70" : "text-text-muted")}>
-										{time(m.at)}{isOwn && m.status === "seen" ? " · Seen" : ""}
+										{time(m.at)}
+										{isOwn && m.status === "seen" ? " · Seen" : m.status === "error" ? " · Failed" : ""}
 									</p>
 								</div>
 							</motion.div>

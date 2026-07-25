@@ -6,6 +6,7 @@ export interface User {
 	name: string
 	email: string
 	avatar: string
+	bannerUrl?: string
 	status: UserStatus
 	bio?: string
 	phone?: string
@@ -47,10 +48,12 @@ export interface Reaction {
 export interface Message {
 	id: string
 	authorId: string
+	authorName?: string
 	text: string
 	at: string
 	type?: MessageKind
 	status: MessageStatus
+	avatar?: string
 	reactions?: Reaction[]
 	replyTo?: { author: string; preview: string }
 	pinned?: boolean

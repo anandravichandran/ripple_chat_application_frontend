@@ -8,12 +8,14 @@ import { Search, Pin } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { UserAvatar } from "@/components/shared/user-avatar"
-import { conversations } from "@/lib/mock"
+import { useConversations } from "@/hooks/use-conversations"
+import type { Conversation } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 export function ConversationList() {
 	const [q, setQ] = useState("")
 	const pathname = usePathname()
+	const { data: conversations = [], isLoading } = useConversations()
 	const filtered = conversations.filter((c) => c.user.name.toLowerCase().includes(q.trim().toLowerCase()))
 	const pinned = filtered.filter((c) => c.pinned)
 	const others = filtered.filter((c) => !c.pinned)
@@ -27,26 +29,34 @@ export function ConversationList() {
 				</div>
 			</div>
 			<div className="flex-1 overflow-y-auto p-2">
-				{pinned.length > 0 ? (
+				{isLoading ? (
+					<p className="p-4 text-sm text-text-muted">Loading conversations…</p>
+				) : filtered.length === 0 ? (
+					<p className="p-4 text-sm text-text-muted">No conversations yet</p>
+				) : (
 					<>
-						<p className="flex items-center gap-1 px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">
-							<Pin className="h-2.5 w-2.5" />Pinned
-						</p>
-						{pinned.map((c) => <ConvItem key={c.id} c={c} active={pathname === `/messages/${c.id}`} />)}
+						{pinned.length > 0 ? (
+							<>
+								<p className="flex items-center gap-1 px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">
+									<Pin className="h-2.5 w-2.5" />Pinned
+								</p>
+								{pinned.map((c) => <ConvItem key={c.id} c={c} active={pathname === `/messages/${c.id}`} />)}
+							</>
+						) : null}
+						{others.length > 0 ? (
+							<>
+								<p className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted">All conversations</p>
+								{others.map((c, i) => <ConvItem key={c.id} c={c} active={pathname === `/messages/${c.id}`} index={i} />)}
+							</>
+						) : null}
 					</>
-				) : null}
-				{others.length > 0 ? (
-					<>
-						<p className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted">All conversations</p>
-						{others.map((c, i) => <ConvItem key={c.id} c={c} active={pathname === `/messages/${c.id}`} index={i} />)}
-					</>
-				) : null}
+				)}
 			</div>
 		</aside>
 	)
 }
 
-function ConvItem({ c, active, index = 0 }: { c: (typeof conversations)[number]; active: boolean; index?: number }) {
+function ConvItem({ c, active, index = 0 }: { c: Conversation; active: boolean; index?: number }) {
 	return (
 		<motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02 * index }}>
 			<Link

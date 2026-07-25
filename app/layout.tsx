@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description:
     "Ripple Chat is a real-time messaging platform for modern teams. Secure room-based chat, live presence, typing indicators, read receipts, and encrypted authentication.",
   keywords: ["real-time chat", "team messaging", "secure chat", "SaaS", "collaboration"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
   openGraph: {
     title: "Ripple Chat — Secure. Instant. Connected.",
     description: "Real-time conversations built for modern teams.",
