@@ -53,6 +53,8 @@ A full-stack real-time chat application built with **Next.js**, **TypeScript**, 
 
 # admin can monitor everything and delete same as make as admin for the another user all the premission accessing having
 
+# frontend deployed in the vercel but backend also deployed successfully in the render but it have SMTP problem due to the google SMTP mail doesnt allow third party mailer so it has blocked if want to check in the frontend UI and UX check with vercel same as backend also run successfully but i have an error in SMTP  that ( it tired resend,brevo) they asked RESTAPI key which means sender have the own domain.
+
 # Project Structure
 
 ```
