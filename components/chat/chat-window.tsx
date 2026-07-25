@@ -25,7 +25,8 @@ export function ChatWindow({ room }: { room: Room }) {
 	const { data, isLoading, isError, refetch } = useMessages(room.id)
 	const sendMessage = useSendMessage(room.id)
 	const currentUser = useAuthStore((s) => s.user)
-	const typingUsers = useRoomStore((s) => s.typingByRoom[room.id] ?? [])
+	const rawTyping = useRoomStore((s) => s.typingByRoom[room.id])
+	const typingUsers = useMemo(() => rawTyping ?? [], [rawTyping])
 	const setCurrentRoom = useRoomStore((s) => s.setCurrentRoom)
 	const qc = useQueryClient()
 
