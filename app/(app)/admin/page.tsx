@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { adminApi, auditApi, reportsApi } from "@/lib/api"
 import type { User } from "@/lib/types"
+import { useOnlineStore } from "@/store/online-store"
 
 function useAdminUsers(params: { q?: string; role?: string; status?: string; page?: number; limit?: number }) {
 	return useQuery({
@@ -52,6 +53,13 @@ function useReports(params: { status?: string; page?: number; limit?: number }) 
 	})
 }
 
+function useAdminRooms(params: { q?: string; visibility?: string; page?: number; limit?: number }) {
+	return useQuery({
+		queryKey: ["admin", "rooms", params],
+		queryFn: () => adminApi.listRooms(params),
+	})
+}
+
 const REPORT_TARGET_LABELS: Record<string, string> = { user: "User", message: "Message", room: "Room" }
 const REPORT_STATUS_VARIANTS: Record<string, "warn" | "danger" | "success" | "outline"> = { OPEN: "warn", INVESTIGATING: "danger", RESOLVED: "success", DISMISSED: "outline" }
 
@@ -64,10 +72,13 @@ export default function AdminPage() {
 	const [resolutionText, setResolutionText] = useState("")
 	const [resolveId, setResolveId] = useState<string | null>(null)
 
-	const { data: analytics } = useAnalytics()
-	const { data: usersData, isLoading } = useAdminUsers({ q: search || undefined, page, limit: 10 })
+	const { data: analytics, isError: analyticsError } = useAnalytics()
+	const { data: usersData, isLoading, isError: usersError } = useAdminUsers({ q: search || undefined, page, limit: 10 })
 	const { data: auditData } = useAuditLogs({ page: 1, limit: 50 })
 	const { data: reportsData } = useReports({ status: reportFilter || undefined, page: reportPage, limit: 10 })
+	const { data: adminRoomsData, isLoading: roomsLoading } = useAdminRooms({ page: 1, limit: 50 })
+
+	const forbidden = analyticsError || usersError
 
 	const updateRoleMutation = useMutation({
 		mutationFn: ({ id, role }: { id: string; role: string }) => adminApi.updateUserRole(id, role),
@@ -125,6 +136,16 @@ export default function AdminPage() {
 				title="Ripple control panel"
 				description="Watch health, manage users and rooms, moderate reports, review audit logs."
 			/>
+
+			{forbidden ? (
+				<GlassCard className="mb-4 flex items-center gap-3 border-state-danger/30 bg-state-danger/5 p-4">
+					<ShieldAlert className="h-5 w-5 shrink-0 text-state-danger" />
+					<div>
+						<p className="text-sm font-semibold text-state-danger">Access forbidden</p>
+						<p className="text-xs text-text-secondary">Your account does not have admin privileges. If you believe this is a mistake, contact another administrator.</p>
+					</div>
+				</GlassCard>
+			) : null}
 
 			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 				{kpis.map((k, i) => {
@@ -241,23 +262,50 @@ export default function AdminPage() {
 				</TabsContent>
 
 				<TabsContent value="rooms">
-					<GlassCard className="p-6">
-						<div className="flex flex-col items-center gap-3 py-10 text-center">
-							<div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-glass-border bg-white/[0.04] text-text-muted">
-								<Hash className="h-5 w-5" />
-							</div>
-							<h3 className="text-base font-semibold">{analytics?.totalRooms ?? 0} rooms total</h3>
-							<p className="max-w-md text-sm text-text-secondary">
-								Top room: {(analytics?.topRooms as { name?: string; messages?: number }[])?.[0]?.name ?? "N/A"} &mdash; {(analytics?.topRooms as { messages?: number }[])?.[0]?.messages ?? 0} messages.
-							</p>
-							<div className="mt-2 w-full max-w-md space-y-1.5 text-left text-sm">
-								{(analytics?.topRooms as { name: string; messages: number; members: number }[] | undefined)?.map((r, i) => (
-									<div key={r.name} className="flex items-center justify-between rounded-lg border border-glass-border px-3 py-2">
-										<span className="font-medium">#{r.name}</span>
-										<span className="text-xs text-text-muted">{r.messages} msgs &middot; {r.members} members</span>
-									</div>
-								))}
-							</div>
+					<GlassCard className="p-0 overflow-hidden">
+						<div className="overflow-x-auto">
+							<table className="w-full text-sm">
+								<thead>
+									<tr className="text-left text-[11px] uppercase tracking-widest text-text-muted">
+										<th className="px-4 py-3">Room</th>
+										<th className="px-4 py-3">Visibility</th>
+										<th className="px-4 py-3">Owner</th>
+										<th className="px-4 py-3">Members</th>
+										<th className="px-4 py-3">Messages</th>
+										<th className="px-4 py-3">Category</th>
+										<th className="px-4 py-3">Created</th>
+									</tr>
+								</thead>
+								<tbody>
+									{roomsLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-text-muted">Loading rooms…</td></tr>}
+									{!roomsLoading && (!adminRoomsData?.rooms || adminRoomsData.rooms.length === 0) && (
+										<tr><td colSpan={7} className="px-4 py-8 text-center text-text-muted">No rooms found</td></tr>
+									)}
+									{(adminRoomsData?.rooms ?? []).map((r: { id: string; name: string; icon?: string | null; visibility?: string; owner?: { name?: string; avatarUrl?: string | null }; memberCount?: number; messageCount?: number; category?: string | null; createdAt?: string }) => (
+										<tr key={r.id} className="border-t border-glass-border transition-colors hover:bg-glass-hover">
+											<td className="px-4 py-3">
+												<div className="flex items-center gap-3">
+													<span className="flex h-8 w-8 items-center justify-center rounded-xl border border-glass-border bg-white/[0.04] text-sm">{r.icon ?? "#"}</span>
+													<span className="font-medium text-text-primary">{r.name}</span>
+												</div>
+											</td>
+											<td className="px-4 py-3">
+												<Badge variant={r.visibility === "PUBLIC" ? "outline" : "aqua"} className="capitalize text-xs">{(r.visibility ?? "").toLowerCase()}</Badge>
+											</td>
+											<td className="px-4 py-3">
+												<div className="flex items-center gap-2">
+													<UserAvatar src={r.owner?.avatarUrl} initials={r.owner?.name?.charAt(0)?.toUpperCase()} size="xs" />
+													<span className="text-xs">{r.owner?.name ?? "Unknown"}</span>
+												</div>
+											</td>
+											<td className="px-4 py-3 text-text-muted text-xs">{r.memberCount ?? 0}</td>
+											<td className="px-4 py-3 text-text-muted text-xs">{r.messageCount ?? 0}</td>
+											<td className="px-4 py-3 text-xs"><Badge variant="default" className="text-[10px] capitalize">{r.category ?? "general"}</Badge></td>
+											<td className="px-4 py-3 text-text-muted text-xs">{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
 						</div>
 					</GlassCard>
 				</TabsContent>

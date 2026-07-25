@@ -19,6 +19,7 @@ export function UserAvatar({
 	status,
 	ring,
 	className,
+	onClick,
 }: {
 	src?: string | null
 	initials?: string
@@ -26,9 +27,15 @@ export function UserAvatar({
 	status?: UserStatus
 	ring?: boolean
 	className?: string
+	onClick?: () => void
 }) {
+	const Comp = onClick ? "button" : "div"
 	return (
-		<div className={cn("relative shrink-0", className)}>
+		<Comp
+			type={onClick ? "button" : undefined}
+			onClick={onClick}
+			className={cn("relative shrink-0", onClick && "cursor-pointer", className)}
+		>
 			<Avatar
 				className={cn(
 					sizeMap[size],
@@ -43,6 +50,6 @@ export function UserAvatar({
 					<StatusDot status={status} />
 				</span>
 			) : null}
-		</div>
+		</Comp>
 	)
 }

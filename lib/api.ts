@@ -82,7 +82,7 @@ type BackendUser = {
 type BackendRoomItem = {
 	id: string; name: string; icon: string | null; description: string | null
 	category: string | null; visibility: "PUBLIC" | "PRIVATE"; isDirect: boolean
-	members: number; unread: number; pinned: boolean; recentlyJoined: boolean
+	members: number; onlineCount?: number; unread: number; pinned: boolean; recentlyJoined: boolean
 	role: "OWNER" | "MODERATOR" | "MEMBER" | null
 	lastMessage: string | null; lastAuthor: string | null; lastActivity: string | null
 	createdAt: string
@@ -130,7 +130,8 @@ function toRoom(b: BackendRoomItem): Room {
 	return {
 		id: b.id, name: b.name, icon: b.icon ?? "", description: b.description ?? "",
 		category: b.category ?? "", visibility: b.visibility.toLowerCase() as "public" | "private",
-		members: b.members, online: 0, unread: b.unread,
+		isDirect: b.isDirect ?? false,
+		members: b.members, online: b.onlineCount ?? 0, unread: b.unread,
 		lastMessage: b.lastMessage ?? "", lastAuthor: b.lastAuthor ?? "", lastAt: b.lastActivity ?? b.createdAt,
 		pinned: b.pinned, recentlyJoined: b.recentlyJoined,
 	}
@@ -235,6 +236,8 @@ export const usersApi = {
 			const d = extractData<{ sessions: BackendSession[] }>(res)
 			return { sessions: d.sessions.map(toSession) }
 		}),
+
+	get: (id: string) => api.get(`/users/${id}`).then((res) => toUser(extractData<BackendUser>(res))),
 }
 
 // ---- Rooms API ----
@@ -374,6 +377,22 @@ export const adminApi = {
 			}
 			return extractData<Analytics>(res)
 		}),
+
+	listRooms: (params?: { q?: string; visibility?: string; page?: number; limit?: number }) =>
+		api.get("/admin/rooms", { params }).then((res) => {
+			type AdminRoom = {
+				id: string; name: string; icon: string | null; description: string | null
+				category: string | null; visibility: "PUBLIC" | "PRIVATE"
+				owner: { id: string; name: string; username: string; avatarUrl: string | null }
+				memberCount: number; messageCount: number
+				createdAt: string; updatedAt: string
+			}
+			const d = extractData<{ items: AdminRoom[]; meta: PaginatedMeta }>(res)
+			return { rooms: d.items, meta: d.meta }
+		}),
+
+	promoteToAdmin: (id: string) =>
+		api.post(`/admin/users/${id}/promote`).then(extractData),
 }
 
 // ---- Audit API ----

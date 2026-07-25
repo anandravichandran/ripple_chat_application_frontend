@@ -23,6 +23,7 @@ import { useNotificationStore } from "@/store/notification-store"
 import { UserAvatar } from "@/components/shared/user-avatar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
+import { useProfileDrawer } from "@/store/profile-drawer-store"
 import { useRouter } from "next/navigation"
 
 const items = [
@@ -42,6 +43,7 @@ export function SidebarNav() {
 	const user = useAuthStore((s) => s.user)
 	const signOut = useAuthStore((s) => s.logout)
 	const unread = useNotificationStore((s) => s.items.filter((n) => !n.read).length)
+	const { openProfile } = useProfileDrawer()
 
 	const active = (href: string) => pathname === href || pathname.startsWith(href + "/")
 
@@ -132,7 +134,7 @@ export function SidebarNav() {
 			</nav>
 
 			{user ? (
-				<div className="m-3 flex items-center gap-3 rounded-2xl border border-glass-border bg-white/[0.04] p-3">
+				<button type="button" className="m-3 flex w-[calc(100%-24px)] items-center gap-3 rounded-2xl border border-glass-border bg-white/[0.04] p-3 text-left transition-colors hover:bg-glass-hover" onClick={() => openProfile(user.id)}>
 					<UserAvatar src={user.avatar} initials={user.name?.charAt(0)?.toUpperCase()} status={user.status} size="sm" />
 					{!collapsed ? (
 						<div className="min-w-0 flex-1">
@@ -140,7 +142,7 @@ export function SidebarNav() {
 							<p className="truncate text-xs text-text-muted">{user.email}</p>
 						</div>
 					) : null}
-				</div>
+				</button>
 			) : null}
 		</aside>
 	)

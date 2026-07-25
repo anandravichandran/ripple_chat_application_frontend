@@ -7,6 +7,7 @@ import { UserAvatar } from "@/components/shared/user-avatar"
 import { useOnlineStore } from "@/store/online-store"
 import { useAuthStore } from "@/store/auth-store"
 import { useUserSearch } from "@/hooks/use-user-search"
+import { useProfileDrawer } from "@/store/profile-drawer-store"
 
 const statusLabel: Record<string, string> = {
 	online: "Active now",
@@ -31,6 +32,7 @@ export function FriendActivity() {
 		}
 		return []
 	}, [onlineArr])
+	const { openProfile } = useProfileDrawer()
 
 	return (
 		<GlassCard className="p-5">
@@ -50,7 +52,7 @@ export function FriendActivity() {
 							transition={{ delay: 0.04 * i }}
 							className="flex items-center gap-3"
 						>
-							<UserAvatar initials={u.name.charAt(0).toUpperCase()} status={u.status as any} size="sm" />
+							<UserAvatar initials={u.name.charAt(0).toUpperCase()} status={u.status as any} size="sm" onClick={() => openProfile(u.id)} />
 							<div className="min-w-0 flex-1">
 								<p className="truncate text-sm font-medium text-text-primary">{u.name}</p>
 								<p className="truncate text-xs text-text-muted">{statusLabel[u.status]}</p>

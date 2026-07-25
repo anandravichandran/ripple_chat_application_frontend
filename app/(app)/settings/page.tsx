@@ -14,13 +14,14 @@ import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/shared/page-header"
 import { useThemeStore } from "@/store/theme-store"
 import { useAuthStore } from "@/store/auth-store"
-import { useUpdateProfile } from "@/hooks/use-profile"
+import { useProfile, useUpdateProfile } from "@/hooks/use-profile"
 import { cn } from "@/lib/utils"
 
 export default function SettingsPage() {
 	const user = useAuthStore((s) => s.user)
 	const setUser = useAuthStore((s) => s.setUser)
 	const updateProfile = useUpdateProfile()
+	const { isLoading: profileLoading } = useProfile()
 
 	const [name, setName] = useState(user?.name ?? "")
 	const [username, setUsername] = useState(user?.username ?? "")

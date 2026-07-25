@@ -61,8 +61,19 @@ export function useSocketEvents() {
 		const onUserOnline = ({ userId }: { userId: string }) => addOnline(userId)
 		const onUserOffline = ({ userId }: { userId: string }) => removeOnline(userId)
 
-		const onPresenceSync = ({ onlineIds }: { onlineIds: string[] }) => {
-			if (onlineIds) setOnline(onlineIds)
+		const onPresenceSync = (payload: { onlineIds?: string[]; roomId?: string; userId?: string; online?: boolean }) => {
+			if (payload.roomId && payload.onlineIds) {
+				setOnline(payload.onlineIds)
+				qc.invalidateQueries({ queryKey: ["rooms", payload.roomId] })
+			} else if (payload.onlineIds) {
+				setOnline(payload.onlineIds)
+			} else if (payload.userId !== undefined && payload.online !== undefined) {
+				if (payload.online) {
+					addOnline(payload.userId)
+				} else {
+					removeOnline(payload.userId)
+				}
+			}
 		}
 
 		const onReceiveMessage = () => {
@@ -120,6 +131,8 @@ export function useSocketEvents() {
 		socket.on(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated)
 		socket.on(SOCKET_EVENTS.ROOM_UPDATED, onRoomUpdated)
 		socket.on(SOCKET_EVENTS.ROOM_DELETED, onRoomDeleted)
+		socket.on(SOCKET_EVENTS.MEMBER_JOINED, () => qc.invalidateQueries({ queryKey: ["rooms"] }))
+		socket.on(SOCKET_EVENTS.MEMBER_LEFT, () => qc.invalidateQueries({ queryKey: ["rooms"] }))
 		socket.on(SOCKET_EVENTS.USER_CREATED, onUserCreated)
 		socket.on(SOCKET_EVENTS.USER_UPDATED, onUserUpdated)
 		socket.on(SOCKET_EVENTS.TYPING, onTyping)

@@ -7,9 +7,10 @@ type OnlineState = {
 	setOnline: (ids: string[]) => void
 	add: (id: string) => void
 	remove: (id: string) => void
+	isOnline: (id: string) => boolean
 }
 
-export const useOnlineStore = create<OnlineState>((set) => ({
+export const useOnlineStore = create<OnlineState>((set, get) => ({
 	onlineIds: new Set(),
 	setOnline: (ids) => set({ onlineIds: new Set(ids) }),
 	add: (id) =>
@@ -24,4 +25,5 @@ export const useOnlineStore = create<OnlineState>((set) => ({
 			next.delete(id)
 			return { onlineIds: next }
 		}),
+	isOnline: (id) => get().onlineIds.has(id),
 }))

@@ -7,6 +7,8 @@ import { SidebarNav } from "./sidebar-nav"
 import { TopNavbar } from "./top-navbar"
 import { NotificationDrawer } from "./notification-drawer"
 import { MobileDrawer } from "./mobile-drawer"
+import { UserProfileDrawer } from "@/components/shared/user-profile-drawer"
+import { useProfileDrawer } from "@/store/profile-drawer-store"
 import { MobileBottomNav } from "./mobile-bottom-nav"
 import { FloatingShapes } from "@/components/shared/floating-shapes"
 import { FullPageLoader } from "@/components/shared/loader"
@@ -16,6 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
 	const { user, status, hydrate } = useAuthStore()
 	const [mounted, setMounted] = useState(false)
+	const { userId: profileUserId, closeProfile } = useProfileDrawer()
 
 	useEffect(() => {
 		setMounted(true)
@@ -67,6 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 			<MobileBottomNav />
 			<MobileDrawer />
 			<NotificationDrawer />
+			<UserProfileDrawer userId={profileUserId} onClose={closeProfile} />
 		</div>
 	)
 }

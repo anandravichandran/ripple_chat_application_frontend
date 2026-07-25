@@ -6,8 +6,12 @@ import Link from "next/link"
 import type { Room } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useOnlineStore } from "@/store/online-store"
+import { useRoom } from "@/hooks/use-rooms"
 
-export function ChatHeader({ room, onToggleInfo }: { room: Room; onToggleInfo?: () => void }) {
+export function ChatHeader({ room, onToggleInfo, memberIds }: { room: Room; onToggleInfo?: () => void; memberIds?: string[] }) {
+	const onlineIds = useOnlineStore((s) => s.onlineIds)
+	const onlineCount = memberIds ? memberIds.filter(id => onlineIds.has(id)).length : room.online
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: -6 }}
@@ -34,7 +38,7 @@ export function ChatHeader({ room, onToggleInfo }: { room: Room; onToggleInfo?: 
 					<span className="flex items-center gap-1"><Users className="h-3 w-3" />{room.members}</span>
 					<span>·</span>
 					<span className="flex items-center gap-1">
-						<span className="h-1.5 w-1.5 rounded-full bg-state-success" />{room.online} online
+						<span className="h-1.5 w-1.5 rounded-full bg-state-success" />{onlineCount} online
 					</span>
 				</p>
 			</div>

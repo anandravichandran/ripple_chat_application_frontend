@@ -12,6 +12,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useProfileDrawer } from "@/store/profile-drawer-store"
 import { cn } from "@/lib/utils"
 import { time } from "@/lib/format"
 import type { Message, User } from "@/lib/types"
@@ -42,6 +43,7 @@ export function MessageBubble({
 	onPin?: (m: Message) => void
 }) {
 	const [hovered, setHovered] = useState(false)
+	const { openProfile } = useProfileDrawer()
 
 	return (
 		<motion.div
@@ -54,14 +56,14 @@ export function MessageBubble({
 		>
 			<div className="w-9 shrink-0">
 				{showAvatar ? (
-					<UserAvatar src={author?.avatar} initials={author?.name?.charAt(0)?.toUpperCase() ?? message.authorId.slice(0, 2)} status={author?.status ?? "offline"} size="sm" />
+					<UserAvatar src={author?.avatar} initials={author?.name?.charAt(0)?.toUpperCase() ?? message.authorId.slice(0, 2)} status={author?.status ?? "offline"} size="sm" onClick={author ? () => openProfile(author.id) : undefined} />
 				) : null}
 			</div>
 
 			<div className={cn("flex min-w-0 flex-1 flex-col", isOwn && "items-end")}>
 				{showMeta ? (
 					<div className={cn("mb-1 flex items-center gap-2 text-[11px]", isOwn && "flex-row-reverse")}>
-						<span className="font-medium text-text-primary">{isOwn ? "You" : author?.name ?? "Unknown"}</span>
+						<button type="button" className="font-medium text-text-primary hover:underline" onClick={author ? () => openProfile(author.id) : undefined}>{isOwn ? "You" : author?.name ?? "Unknown"}</button>
 						<span className="text-text-muted">{time(message.at)}</span>
 					</div>
 				) : null}
