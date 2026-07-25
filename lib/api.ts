@@ -1,7 +1,7 @@
 import axios from "axios"
 import type { User, Room, Message, MessageKind, Notification, Session, UserStatus } from "./types"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api"
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "/api").replace(/\/+$/, "")
 const API_ORIGIN = API_BASE.replace(/\/api\/?$/, "")
 
 export function resolveImageUrl(url: string | null | undefined): string {
