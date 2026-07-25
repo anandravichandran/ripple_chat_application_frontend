@@ -29,13 +29,13 @@ export function UserMenu() {
 					type="button"
 					className="group flex items-center gap-2.5 rounded-full border border-glass-border bg-white/[0.03] py-1 pl-1 pr-3 transition-colors hover:bg-glass-hover"
 				>
-					<UserAvatar initials={user.avatar} status={user.status} size="sm" />
+					<UserAvatar src={user.avatar} initials={user.name?.charAt(0)?.toUpperCase()} status={user.status} size="sm" />
 					<span className="hidden text-sm text-text-primary sm:inline">{user.name.split(" ")[0]}</span>
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-64">
 				<div className="flex items-center gap-3 p-2">
-					<UserAvatar initials={user.avatar} status={user.status} size="md" />
+					<UserAvatar src={user.avatar} initials={user.name?.charAt(0)?.toUpperCase()} status={user.status} size="md" />
 					<div className="min-w-0">
 						<p className="truncate text-sm font-medium text-text-primary">{user.name}</p>
 						<p className="truncate text-xs text-text-muted">{user.email}</p>

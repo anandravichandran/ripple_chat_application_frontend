@@ -133,7 +133,7 @@ export function SidebarNav() {
 
 			{user ? (
 				<div className="m-3 flex items-center gap-3 rounded-2xl border border-glass-border bg-white/[0.04] p-3">
-					<UserAvatar initials={user.avatar} status={user.status} size="sm" />
+					<UserAvatar src={user.avatar} initials={user.name?.charAt(0)?.toUpperCase()} status={user.status} size="sm" />
 					{!collapsed ? (
 						<div className="min-w-0 flex-1">
 							<p className="truncate text-sm font-medium text-text-primary">{user.name}</p>
