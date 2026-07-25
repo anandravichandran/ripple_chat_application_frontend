@@ -257,6 +257,9 @@ export const roomsApi = {
 	delete: (id: string) =>
 		api.delete(`/rooms/${id}`).then(extractData),
 
+	findOrCreateDirect: (participantId: string) =>
+		api.post("/rooms/direct", { participantId }).then((r) => r.data.data as { id: string; name: string; icon: string | null; isDirect: boolean; visibility: string; memberCount: number; viewerRole: string | null }),
+
 	join: (id: string, body?: { password?: string; inviteCode?: string }) =>
 		api.post(`/rooms/${id}/join`, body ?? {}).then(extractData),
 

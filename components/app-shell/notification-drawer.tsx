@@ -100,9 +100,9 @@ export function NotificationDrawer() {
 													}}
 													className="flex items-start gap-3 min-w-0 flex-1 text-left"
 												>
-													{n.actor ? (
-														<UserAvatar initials={n.actor.avatar} size="sm" />
-													) : (
+					{n.actor ? (
+						<UserAvatar src={n.actor.avatar} initials={n.actor.name?.charAt(0)?.toUpperCase()} size="sm" />
+					) : (
 														<div className="flex h-8 w-8 items-center justify-center rounded-full border border-glass-border bg-white/[0.04]">
 															<Icon className="h-3.5 w-3.5 text-text-muted" />
 														</div>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { roomsApi, messagesApi } from "@/lib/api"
 import { useAuthStore } from "@/store/auth-store"
-import type { Conversation, Message } from "@/lib/types"
+import type { Conversation } from "@/lib/types"
 
 export function useConversations() {
   const token = useAuthStore((s) => s.token)
@@ -53,5 +53,11 @@ export function useDmRoom(roomId: string) {
     queryKey: ["dm-room", roomId],
     enabled: !!token && !!roomId,
     queryFn: () => roomsApi.get(roomId),
+  })
+}
+
+export function useCreateDirectRoom() {
+  return useMutation({
+    mutationFn: (participantId: string) => roomsApi.findOrCreateDirect(participantId),
   })
 }

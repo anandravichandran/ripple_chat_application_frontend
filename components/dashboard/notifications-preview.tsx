@@ -29,7 +29,7 @@ export function NotificationsPreview() {
 						className="flex items-start gap-3 rounded-xl border border-glass-border bg-white/[0.02] p-3"
 					>
 						{n.actor ? (
-							<UserAvatar initials={n.actor.avatar} size="xs" />
+							<UserAvatar src={n.actor.avatar} initials={n.actor.name?.charAt(0)?.toUpperCase()} size="xs" />
 						) : (
 							<div className="flex h-6 w-6 items-center justify-center rounded-full border border-glass-border bg-white/[0.04]">
 								<Bell className="h-3 w-3 text-text-muted" />

@@ -54,7 +54,7 @@ export function MessageBubble({
 		>
 			<div className="w-9 shrink-0">
 				{showAvatar ? (
-					<UserAvatar initials={author?.avatar ?? message.authorId.slice(0, 2)} status={author?.status ?? "offline"} size="sm" />
+					<UserAvatar src={author?.avatar} initials={author?.name?.charAt(0)?.toUpperCase() ?? message.authorId.slice(0, 2)} status={author?.status ?? "offline"} size="sm" />
 				) : null}
 			</div>
 

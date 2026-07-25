@@ -13,7 +13,7 @@ export function useSocketEvents() {
 	const setLatency = useSocketStore((s) => s.setLatency)
 	const addOnline = useOnlineStore((s) => s.add)
 	const removeOnline = useOnlineStore((s) => s.remove)
-	const setCurrentRoom = useRoomStore((s) => s.setCurrentRoom)
+	const setOnline = useOnlineStore((s) => s.setOnline)
 	const setTyping = useRoomStore((s) => s.setTyping)
 	const status = useAuthStore((s) => s.status)
 	const qc = useQueryClient()
@@ -26,6 +26,7 @@ export function useSocketEvents() {
 			return
 		}
 
+		setStatus("connecting")
 		const socket = connectSocket()
 		if (!socket) return
 
@@ -34,7 +35,19 @@ export function useSocketEvents() {
 			heartbeatRef.current = Date.now()
 		}
 
-		const onDisconnect = () => setStatus("disconnected")
+		const onDisconnect = (reason: string) => {
+			if (reason === "io server disconnect" || reason === "transport close") {
+				setStatus("disconnected")
+			} else {
+				setStatus("reconnecting")
+			}
+		}
+
+		const onReconnect = () => {
+			setStatus("connected")
+			heartbeatRef.current = Date.now()
+		}
+
 		const onReconnectAttempt = () => setStatus("reconnecting")
 		const onConnectError = () => setStatus("disconnected")
 
@@ -46,6 +59,10 @@ export function useSocketEvents() {
 
 		const onUserOnline = ({ userId }: { userId: string }) => addOnline(userId)
 		const onUserOffline = ({ userId }: { userId: string }) => removeOnline(userId)
+
+		const onPresenceSync = ({ onlineIds }: { onlineIds: string[] }) => {
+			if (onlineIds) setOnline(onlineIds)
+		}
 
 		const onReceiveMessage = () => {
 			qc.invalidateQueries({ queryKey: ["messages"] })
@@ -75,11 +92,14 @@ export function useSocketEvents() {
 
 		socket.on(SOCKET_EVENTS.CONNECT, onConnect)
 		socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect)
+		socket.on(SOCKET_EVENTS.CONNECT_ERROR, onConnectError)
+		socket.io.on("reconnect", onReconnect)
 		socket.io.on("reconnect_attempt", onReconnectAttempt)
 		socket.io.on("reconnect_error", onConnectError)
 		socket.on(SOCKET_EVENTS.HEARTBEAT, onHeartbeat)
 		socket.on(SOCKET_EVENTS.USER_ONLINE, onUserOnline)
 		socket.on(SOCKET_EVENTS.USER_OFFLINE, onUserOffline)
+		socket.on(SOCKET_EVENTS.PRESENCE_SYNC, onPresenceSync)
 		socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage)
 		socket.on(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
 		socket.on(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
@@ -92,17 +112,19 @@ export function useSocketEvents() {
 		socket.on(SOCKET_EVENTS.STOP_TYPING, onStopTyping)
 		socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, onNotification)
 
-		setStatus("connecting")
 		socket.connect()
 
 		return () => {
 			socket.off(SOCKET_EVENTS.CONNECT, onConnect)
 			socket.off(SOCKET_EVENTS.DISCONNECT, onDisconnect)
+			socket.off(SOCKET_EVENTS.CONNECT_ERROR, onConnectError)
+			socket.io.off("reconnect", onReconnect)
 			socket.io.off("reconnect_attempt", onReconnectAttempt)
 			socket.io.off("reconnect_error", onConnectError)
 			socket.off(SOCKET_EVENTS.HEARTBEAT, onHeartbeat)
 			socket.off(SOCKET_EVENTS.USER_ONLINE, onUserOnline)
 			socket.off(SOCKET_EVENTS.USER_OFFLINE, onUserOffline)
+			socket.off(SOCKET_EVENTS.PRESENCE_SYNC, onPresenceSync)
 			socket.off(SOCKET_EVENTS.RECEIVE_MESSAGE, onReceiveMessage)
 			socket.off(SOCKET_EVENTS.MESSAGE_EDITED, onMessageEdited)
 			socket.off(SOCKET_EVENTS.MESSAGE_DELETED, onMessageDeleted)
@@ -115,5 +137,5 @@ export function useSocketEvents() {
 			socket.off(SOCKET_EVENTS.STOP_TYPING, onStopTyping)
 			socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, onNotification)
 		}
-	}, [status, setStatus, setLatency, addOnline, removeOnline, setTyping, qc])
+	}, [status, setStatus, setLatency, addOnline, removeOnline, setOnline, setTyping, qc])
 }

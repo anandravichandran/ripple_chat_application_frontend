@@ -61,7 +61,7 @@ export function DmWindow({ conversation, seed }: { conversation: Conversation; s
 				<Button asChild variant="ghost" size="iconSm" className="md:hidden">
 					<Link href="/messages" aria-label="Back to conversations"><ArrowLeft className="h-4 w-4" /></Link>
 				</Button>
-				<UserAvatar initials={conversation.user.avatar} status={conversation.user.status} size="sm" />
+				<UserAvatar src={conversation.user.avatar} initials={conversation.user.name?.charAt(0)?.toUpperCase()} status={conversation.user.status} size="sm" />
 				<div className="min-w-0 flex-1">
 					<p className="truncate text-sm font-semibold">{conversation.user.name}</p>
 					<p className="truncate text-[11px] text-text-muted">

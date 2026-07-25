@@ -48,17 +48,22 @@ export function ChatWindow({ room }: { room: Room }) {
 
 	useEffect(() => {
 		setCurrentRoom(room.id)
-		const socket = getSocket()
-		if (socket.connected) {
-			socket.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: room.id }, (res: unknown) => {
-				if ((res as { ok: boolean })?.ok && isMountedRef.current) {
-					refetch()
-				}
-			})
+		function doJoin() {
+			const s = getSocket()
+			if (s.connected) {
+				s.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: room.id }, (res: unknown) => {
+					if ((res as { ok: boolean })?.ok && isMountedRef.current) {
+						refetch()
+					}
+				})
+			}
 		}
+		doJoin()
+		const socket = getSocket()
+		socket.on(SOCKET_EVENTS.CONNECT, doJoin)
 		return () => {
 			setCurrentRoom(null)
-			const socket = getSocket()
+			socket.off(SOCKET_EVENTS.CONNECT, doJoin)
 			if (socket.connected) {
 				socket.emit(SOCKET_EVENTS.LEAVE_ROOM, { roomId: room.id })
 			}
